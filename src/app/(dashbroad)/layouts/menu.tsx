@@ -36,7 +36,13 @@ const menuItems = [
   },
   {
     key: "5",
-    icon: <UploadOutlined />,
+    icon: <DollarOutlined />,
+    label: "Layouts",
+    path: "/layouts",
+  },
+  {
+    key: "5",
+    icon: <DollarOutlined />,
     label: "Layouts",
     path: "/layouts",
   },
