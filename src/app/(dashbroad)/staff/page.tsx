@@ -1,176 +1,201 @@
 "use client";
+import { BsPersonFillAdd } from "react-icons/bs";
+import { BsFillUnlockFill } from "react-icons/bs";
+import { BsFillLockFill } from "react-icons/bs";
 import React, { useState } from "react";
-
-interface Employee {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  isLocked: boolean;
-}
+import { DeleteOutlined, ImportOutlined } from "@ant-design/icons";
+import { Staff } from "@/shared/types/user";
+import { Button, Table } from "antd";
+import { Column } from "@/shared/types/table";
 
 const AdminPage: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>([
+  const [staffs, setStaffs] = useState<Staff[]>([
     {
-      id: 1,
+      id: " 1",
+      image:
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSILPqTXqLj8vJ9ePsxBrkRz4k0w7IPzOCiPA&s",
       name: "John Doe",
       email: "john.doe@example.com",
       role: "Manager",
       isLocked: false,
     },
     {
-      id: 2,
+      id: "2",
+      image:
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn7ECoI9CfwEAvZERO52n405DF4md6CDwdEg&s",
       name: "Jane Smith",
-      email: "jane.smith@example.com",
+      email: "janeSmith@example.com",
       role: "Staff",
       isLocked: false,
     },
   ]);
-
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
-  const [formData, setFormData] = useState<Employee>({
-    id: employees.length + 1,
-    name: "",
+  const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
+  const [image, setImage] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
     email: "",
-    role: "",
-    isLocked: false,
+    password: "abcd1234",
+    username: "",
+    name: "",
   });
-
-  // Mở modal để thêm hoặc chỉnh sửa nhân viên
-  const openModal = (employee?: Employee) => {
-    if (employee) {
-      setCurrentEmployee(employee);
-      setFormData(employee);
-    } else {
-      setCurrentEmployee(null);
-      setFormData({
-        id: employees.length + 1,
-        name: "",
-        email: "",
-        role: "",
-        isLocked: false,
-      });
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImage(URL.createObjectURL(file));
     }
+  };
+
+  const openModal = () => {
     setShowModal(true);
   };
-
-  // Đóng modal
   const closeModal = () => {
     setShowModal(false);
-    setCurrentEmployee(null);
   };
 
-  // Hàm xử lý thay đổi form
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const handleDelete = (id: string) => {
+    setStaffs((prev) => prev.filter((staff) => staff.id !== id));
   };
-
-  // Lưu nhân viên (Thêm mới hoặc Cập nhật)
-  const saveEmployee = () => {
-    if (currentEmployee) {
-      // Cập nhật nhân viên
-      setEmployees((prev) =>
-        prev.map((emp) => (emp.id === currentEmployee.id ? formData : emp))
-      );
-    } else {
-      // Thêm nhân viên mới
-      setEmployees((prev) => [
-        ...prev,
-        { ...formData, id: employees.length + 1 },
-      ]);
-    }
-    closeModal();
-  };
-
-  // Hàm khóa/mở khóa tài khoản nhân viên
-  const toggleLockAccount = (id: number) => {
-    setEmployees((prev) =>
-      prev.map((emp) =>
-        emp.id === id ? { ...emp, isLocked: !emp.isLocked } : emp
-      )
-    );
-  };
-
-  // Hàm xóa nhân viên
-  const deleteEmployee = (id: number) => {
-    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-  };
+  const columns: Column[] = [
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      align: "center",
+    },
+    {
+      title: "Image",
+      dataIndex: "image",
+      key: "image",
+      align: "center",
+      render: (text, record) => (
+        <div className="flex justify-center items-center h-full">
+          <img
+            src={record.image || "path/to/default/image.png"}
+            alt="Staff"
+            className="w-12 h-12 rounded-md"
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      align: "center",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      align: "center",
+    },
+    {
+      title: "Role",
+      dataIndex: "role",
+      key: "role",
+      align: "center",
+    },
+    {
+      title: "Status",
+      dataIndex: "isLocked",
+      key: "isLocked",
+      align: "center",
+      render: (text, record) => (
+        <>
+          <Button>
+            {record.isLocked ? <BsFillLockFill /> : <BsFillUnlockFill />}
+          </Button>
+        </>
+      ),
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      key: "action",
+      align: "center",
+      render: (text, record) => (
+        <>
+          <Button color="primary" variant="text">
+            <ImportOutlined
+              style={{
+                fontSize: "22px",
+              }}
+            />
+          </Button>
+          <Button
+            color="danger"
+            variant="text"
+            onClick={() => {
+              handleDelete(record.id);
+            }}
+          >
+            <DeleteOutlined
+              style={{
+                color: "red",
+                fontSize: "22px",
+              }}
+            />
+          </Button>
+        </>
+      ),
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <section className="min-h-screen bg-gray-100 p-8">
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h1 className="text-2xl font-bold mb-6">Employee Management</h1>
-
-        <button
-          onClick={() => openModal()}
-          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-md"
+        <h1 className="text-2xl font-bold mb-6">Staff Management</h1>
+        <Button
+          color="primary"
+          variant="filled"
+          onClick={openModal}
+          style={{ marginBottom: "10px" }}
         >
-          Add Employee
-        </button>
-
-        {/* Bảng danh sách nhân viên */}
-        <table className="w-full table-auto">
-          <thead>
-            <tr>
-              <th className="px-4 py-2">ID</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Role</th>
-              <th className="px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employees.map((employee) => (
-              <tr key={employee.id} className="bg-white border-b">
-                <td className="px-4 py-2">{employee.id}</td>
-                <td className="px-4 py-2">{employee.name}</td>
-                <td className="px-4 py-2">{employee.email}</td>
-                <td className="px-4 py-2">{employee.role}</td>
-                <td className="px-4 py-2 space-x-2">
-                  <button
-                    onClick={() => openModal(employee)}
-                    className="px-4 py-2 bg-yellow-500 text-white rounded-md"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => toggleLockAccount(employee.id)}
-                    className={`px-4 py-2 rounded-md text-white ${
-                      employee.isLocked ? "bg-red-500" : "bg-green-500"
-                    }`}
-                  >
-                    {employee.isLocked ? "Unlock" : "Lock"}
-                  </button>
-                  <button
-                    onClick={() => deleteEmployee(employee.id)}
-                    className="px-4 py-2 bg-red-500 text-white rounded-md"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <BsPersonFillAdd
+            style={{
+              fontSize: "22px",
+            }}
+          />
+          Add
+        </Button>
+        <Table
+          dataSource={staffs}
+          columns={columns}
+          rowKey="id"
+          pagination={{
+            pageSize: 20,
+          }}
+        />
       </div>
-
-      {/* Modal Thêm/Chỉnh sửa nhân viên */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-bold mb-4">
-              {currentEmployee ? "Edit Employee" : "Add Employee"}
+              {currentStaff ? "Edit Employee" : "Add Employee"}
             </h2>
-
+            {image && (
+              <div className="mb-4 flex justify-center">
+                <img
+                  src={image}
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded-full border-4 border-gray-300"
+                />
+              </div>
+            )}
+            <div className="mb-4">
+              <label className="block text-sm font-medium">Upload Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
             <div className="mb-4">
               <label className="block text-sm font-medium">Name</label>
               <input
                 type="text"
                 name="name"
-                value={formData.name}
-                onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg"
               />
             </div>
@@ -179,40 +204,22 @@ const AdminPage: React.FC = () => {
               <input
                 type="email"
                 name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Role</label>
-              <input
-                type="text"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg"
               />
             </div>
 
             <div className="flex space-x-4">
-              <button
-                onClick={saveEmployee}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
-              >
+              <Button color="primary" variant="solid">
                 Save
-              </button>
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 bg-gray-500 text-white rounded-md"
-              >
+              </Button>
+              <Button color="danger" variant="outlined" onClick={closeModal}>
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

@@ -15,7 +15,7 @@ const LanguageSwitch: React.FC = () => {
         <Select
           defaultValue="VN"
           className="w-16 focus:ring-0 focus:outline-none font-semibold text-xl custom-select"
-          bordered={false}
+          variant="borderless"
           style={{
             backgroundColor: "transparent",
           }}

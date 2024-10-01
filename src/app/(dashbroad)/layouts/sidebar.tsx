@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { DoubleLeftOutlined, DoubleRightOutlined } from "@ant-design/icons";
 import { Button, Layout } from "antd";
 import SidebarMenu from "./menu";
-import logo from "../../../../public/images/logo.png";
+import logo from "@public/images/logo.png";
 import Image from "next/image";
 const { Header, Sider, Content } = Layout;
 
@@ -23,13 +23,19 @@ const Sidebar = ({ children }: Readonly<{ children: React.ReactNode }>) => {
           <Image src={logo} alt="" />
           <Button
             type="text"
-            icon={collapsed ? <DoubleLeftOutlined /> : <DoubleRightOutlined />}
+            icon={
+              collapsed ? (
+                <DoubleLeftOutlined style={{ fontSize: "22px" }} />
+              ) : (
+                <DoubleRightOutlined style={{ fontSize: "22px" }} />
+              )
+            }
             onClick={() => setCollapsed(!collapsed)}
             style={{
-              fontSize: "20",
+              fontSize: "24px",
               backgroundColor: "transparent",
             }}
-            className="absolute top-4 right-[-15px] text-blue-600"
+            className="absolute top-7 right-[-30px] !text-blue-600"
           />
         </div>
         <SidebarMenu />

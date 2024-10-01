@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${workSans.className} antialiased`}>
-      <body      >
+      <body>
         <RecoilContextProvider>{children}</RecoilContextProvider>
       </body>
     </html>
