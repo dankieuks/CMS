@@ -5,7 +5,7 @@ import { BsFillLockFill } from "react-icons/bs";
 import React, { useState } from "react";
 import { DeleteOutlined, ImportOutlined } from "@ant-design/icons";
 import { Staff } from "@/shared/types/user";
-import { Button, Table } from "antd";
+import { Button, message, Table } from "antd";
 import { Column } from "@/shared/types/table";
 
 const AdminPage: React.FC = () => {
@@ -43,6 +43,55 @@ const AdminPage: React.FC = () => {
     if (file) {
       setImage(URL.createObjectURL(file));
     }
+  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+  const handleAddStaff = async () => {
+    if (!formData.name) {
+      message.error("Vui lòng nhập đầy đủ thông tin Name.");
+      return;
+    } else if (!formData.email) {
+      message.error("Vui lòng nhập đầy đủ thông tin Email.");
+      return;
+    }
+
+    const newStaff = {
+      ...formData,
+      image:
+        image ||
+        "https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-2.jpg",
+      role: "Staff",
+      isLocked: false,
+    };
+
+    try {
+      // You would send the new staff data to the backend here
+      // await api.addStaff(newStaff);
+
+      setStaffs((prev) => [
+        ...prev,
+        { id: String(staffs.length + 1), ...newStaff },
+      ]);
+      closeModal();
+      resetForm();
+    } catch (error) {
+      console.error("Error adding staff:", error);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      email: "",
+      password: "abcd1234",
+      username: "",
+      name: "",
+    });
+    setImage(null);
   };
 
   const openModal = () => {
@@ -142,9 +191,9 @@ const AdminPage: React.FC = () => {
   ];
 
   return (
-    <section className="min-h-screen bg-gray-100 p-8">
+    <section className="min-h-screen bg-gray-100 p-8 rounded-lg">
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h1 className="text-2xl font-bold mb-6">Staff Management</h1>
+        <h1 className="text-2xl font-bold mb-6">Quan ly nhan vien</h1>
         <Button
           color="primary"
           variant="filled"
@@ -170,9 +219,7 @@ const AdminPage: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold mb-4">
-              {currentStaff ? "Edit Employee" : "Add Employee"}
-            </h2>
+            <h2 className="text-xl font-bold mb-4">Them nhan vien</h2>
             {image && (
               <div className="mb-4 flex justify-center">
                 <img
@@ -196,6 +243,8 @@ const AdminPage: React.FC = () => {
               <input
                 type="text"
                 name="name"
+                value={formData.name}
+                onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg"
               />
             </div>
@@ -204,13 +253,15 @@ const AdminPage: React.FC = () => {
               <input
                 type="email"
                 name="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg"
               />
             </div>
 
             <div className="flex space-x-4">
-              <Button color="primary" variant="solid">
-                Save
+              <Button color="primary" variant="solid" onClick={handleAddStaff}>
+                Them
               </Button>
               <Button color="danger" variant="outlined" onClick={closeModal}>
                 Cancel
@@ -222,5 +273,4 @@ const AdminPage: React.FC = () => {
     </section>
   );
 };
-
 export default AdminPage;

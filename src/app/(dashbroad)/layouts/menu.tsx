@@ -43,7 +43,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ defaultSelectedKeys }) => {
     {
       key: "5",
       icon: <HiOutlineDocumentReport style={{ fontSize: "22px" }} />,
-      label: "Reports",
+      label: "Sales Reports",
       path: "/reports",
     },
     {
