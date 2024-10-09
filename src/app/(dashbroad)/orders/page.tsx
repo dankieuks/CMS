@@ -1,114 +1,418 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
+import { BiMessageSquareAdd } from "react-icons/bi";
+import { QRCodeCanvas } from "qrcode.react"; // Import component tạo mã QR
+import { selectedBrandState } from "@/shared/store/Atoms/product";
+import { useRecoilState } from "recoil";
+import { Product } from "@/shared/types/product";
 
-const SalesDataPage = () => {
+const products: Product[] = [
+  {
+    id: 1,
+    name: "Anna Melody Mark Hi Hid",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSx7z8OLea_Su5Rju8QFwS9eXSutHkqQ66GKg&s",
+    brand: "Coca-Cola",
+  },
+  {
+    id: 2,
+    name: "Bella",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxLkT7moPARzeQ21Q3JFhoARF-m3COjrtU0g&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 3,
+    name: "Chloe",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdQHOC-AYakD0LnDL75zoLyfV3umld0KDyOA&s",
+    brand: "Fanta",
+  },
+  {
+    id: 4,
+    name: "Diana",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNaosiocCMIx_w8MdlmGOgEjOyAMd8BdOU4A&s",
+    brand: "Coca-Cola",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+  {
+    id: 5,
+    name: "Eva",
+    price: 30000,
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
+    brand: "Pepsi",
+  },
+];
+
+const OrderPage: React.FC = () => {
+  const [cart, setCart] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedTable, setSelectedTable] = useState<string>("");
+  const [showQRCode, setShowQRCode] = useState<boolean>(false);
+
+  // Thêm sản phẩm vào giỏ hàng
+  const handleAddToCart = (product: Product) => {
+    setCart((prevCart) => [...prevCart, product]);
+  };
+
+  // Xóa sản phẩm khỏi giỏ hàng
+  const handleRemoveFromCart = (productId: number) => {
+    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+  };
+
+  // Tìm kiếm sản phẩm
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // In bill
+  const handlePrintBill = () => {
+    const billContent = cart
+      .map((item) => `${item.name} - ${item.price.toLocaleString()} VND`)
+      .join("\n");
+    const totalAmount = cart.reduce((total, item) => total + item.price, 0);
+
+    const bill = `
+      Bàn: ${selectedTable || "Chưa chọn"}
+      Hóa đơn của bạn:
+      ----------------------
+      ${billContent}
+      ----------------------
+      Tổng cộng: ${totalAmount.toLocaleString()} VND
+    `;
+    alert(bill); // Thay bằng tính năng in bill thực tế
+  };
+
+  // Thanh toán và hiển thị mã QR
+  const handleCheckout = () => {
+    if (!selectedTable) {
+      alert("Vui lòng chọn bàn trước khi thanh toán.");
+      return;
+    }
+
+    const totalAmount = cart.reduce((total, item) => total + item.price, 0);
+    alert(
+      `Bàn ${selectedTable} đã thanh toán với tổng số tiền ${totalAmount.toLocaleString()} VND`
+    );
+
+    // Hiển thị mã QR sau khi thanh toán
+    setShowQRCode(true);
+  };
+
+  // Tạo chuỗi mã QR từ thông tin thanh toán
+  const bankName = "Ngân hàng BIDV";
+  const bankAccount = "4505046869"; // Đây là số tài khoản
+
+  const getQRCodeValue = () => {
+    const totalAmount = cart.reduce((total, item) => total + item.price, 0);
+    return `Ngân hàng: ${bankName}\nSố tài khoản: ${bankAccount}\nTổng thanh toán: ${totalAmount.toLocaleString()} VND\nBàn: ${selectedTable}`;
+  };
+  const brands = ["Coca-Cola", "Pepsi", "Fanta"];
+  const [selectedBrand, setSelectedBrand] = useRecoilState(selectedBrandState);
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      {/* Header */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Sales data</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-500">
-              Last update time: 2024/09/27 11:39
+    <section className="bg-gray-100 p-6 rounded-xl flex flex-col ">
+      <header className="flex justify-between items-center bg-white shadow-lg px-6 py-4 mb-4 rounded-xl">
+        {/* Tabs cho các thương hiệu */}
+        <div className="flex space-x-4">
+          <button
+            onClick={() => setSelectedBrand("")}
+            className={`px-4 py-2 rounded-md transition ${
+              selectedBrand === ""
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-blue-200"
+            }`}
+          >
+            Tất cả
+          </button>
+          {brands.map((brand) => (
+            <button
+              key={brand}
+              onClick={() => setSelectedBrand(brand)}
+              className={`px-4 py-2 rounded-md transition ${
+                selectedBrand === brand
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-blue-200"
+              }`}
+            >
+              {brand}
+            </button>
+          ))}
+        </div>
+
+        {/* Tìm kiếm sản phẩm */}
+        <input
+          type="text"
+          placeholder="Tìm kiếm sản phẩm..."
+          className="border p-2 w-1/4 rounded-md focus:ring-2 focus:ring-green-300 outline-none"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        {/* In Bill Button */}
+        <button
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
+          onClick={handlePrintBill}
+        >
+          In Bill
+        </button>
+      </header>
+
+      <div className="flex-grow grid grid-cols-5 gap-4 overflow-y-auto">
+        <div className="col-span-3 p-4 bg-white shadow-lg rounded-md">
+          <h2 className="text-lg font-bold mb-4">Danh sách sản phẩm</h2>
+          <ul className="grid grid-cols-5 gap-4 max-h-[620px]  overflow-x-hidden">
+            {filteredProducts.map((product) => (
+              <li
+                key={product.id}
+                className="flex flex-col items-center p-2 border rounded-lg bg-gray-50 shadow hover:shadow-lg transition duration-300 ease-in-out h-48 w-40"
+              >
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-[80px] h-[80px] object-cover rounded-md mb-1"
+                />
+                <span className="text-center font-semibold text-gray-700 truncate w-full">
+                  {product.name}
+                </span>
+                <span className="text-center text-gray-600 mb-1">
+                  {product.price.toLocaleString()} VND
+                </span>
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition duration-300 ease-in-out"
+                >
+                  <BiMessageSquareAdd />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="col-span-2 p-4 bg-white shadow-lg rounded-md ">
+          <h2 className="text-lg font-bold mb-4">
+            Giỏ hàng -{" "}
+            <span className="mt-4">
+              <label className="font-semibold">Bàn:</label>
+              <select
+                value={selectedTable}
+                onChange={(e) => setSelectedTable(e.target.value)}
+                className="border p-2 ml-2 rounded-md focus:ring-2 focus:ring-yellow-300 outline-none"
+              >
+                <option value="">Chọn bàn</option>
+                <option value="VIP 1">VIP 1</option>
+                <option value="VIP 2">VIP 2</option>
+                <option value="Sân vườn">Sân vườn</option>
+              </select>
             </span>
-            <div className="flex items-center space-x-2">
-              <button className="bg-gray-200 p-2 rounded-md">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M6 10a4 4 0 018 0 4 4 0 01-8 0zM10 4a6 6 0 100 12 6 6 0 000-12zm0-2a8 8 0 110 16 8 8 0 010-16z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              <button className="bg-gray-200 p-2 rounded-md">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm4-9a1 1 0 11-2 0V7a1 1 0 012 0v2zM9 7v6a1 1 0 102 0V7a1 1 0 00-2 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="text-gray-500 text-xl mt-4">2024 年 9 月</div>
-      </div>
-
-      {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
-        <div className="bg-blue-50 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Sales Revenue</h2>
-          <div className="flex justify-between items-center">
-            <span className="text-3xl font-bold">$0</span>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
-                <span>2C</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                <span>2B</span>
-              </div>
-            </div>
-          </div>
-          <p className="text-gray-500 mt-2">Monthly sales revenue till today</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">
-            Number of sales transactions
           </h2>
-          <span className="text-3xl font-bold">0</span>
-          <p className="text-gray-500 mt-2">
-            Number of monthly sales transactions till today
-          </p>
-        </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Renewal</h2>
-          <span className="text-3xl font-bold">0</span>
-          <p className="text-gray-500 mt-2">
-            Number of renewals for the current month as of today
-          </p>
-        </div>
+          <ul className="max-h-[320px] overflow-y-auto mb-4">
+            {cart.length === 0 ? (
+              <li className="text-gray-500">Giỏ hàng rỗng</li>
+            ) : (
+              cart.map((item, index) => (
+                <li
+                  key={item.id}
+                  className="flex justify-between items-center p-2 border-b border-gray-200"
+                >
+                  <span>
+                    {index + 1} - {item.name} - {item.price.toLocaleString()}{" "}
+                    VND
+                  </span>
+                  <button
+                    onClick={() => handleRemoveFromCart(item.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition duration-300 ease-in-out"
+                  >
+                    Xóa
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Audition</h2>
-          <span className="text-3xl font-bold">1</span>
-          <p className="text-gray-500 mt-2">
-            The total number of reservations for the current month
-          </p>
-        </div>
+          {cart.length > 0 && (
+            <div className="mt-2 text-right text-gray-800 font-bold">
+              Tổng cộng:{" "}
+              {cart
+                .reduce((total, item) => total + item.price, 0)
+                .toLocaleString()}{" "}
+              VND
+            </div>
+          )}
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Single quantity</h2>
-          <span className="text-3xl font-bold">0</span>
-          <p className="text-gray-500 mt-2">
-            The current one-time order deadline for the current month
-          </p>
-        </div>
+          {showQRCode && (
+            <div className="mt-4 flex flex-col items-center justify-center text-center">
+              <h3 className="font-semibold mb-2">Quét mã QR để thanh toán:</h3>
+              <QRCodeCanvas
+                value={getQRCodeValue()}
+                size={150}
+                bgColor={"#ffffff"}
+                fgColor={"#000000"}
+                level={"L"}
+              />
+            </div>
+          )}
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Quantity</h2>
-          <span className="text-3xl font-bold">0</span>
-          <p className="text-gray-500 mt-2">
-            The total out for the current month to this day
-          </p>
+          {/* Fixed button bar */}
+          <div className="left-0 w-full flex justify-between bg-white shadow-lg p-4 rounded-md">
+            <button
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
+              onClick={handleCheckout}
+            >
+              Thanh toán
+            </button>
+            <button
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
+              onClick={handlePrintBill}
+            >
+              In Bill
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
-export default SalesDataPage;
+export default OrderPage;

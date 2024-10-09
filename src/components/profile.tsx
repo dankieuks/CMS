@@ -51,8 +51,8 @@ const Profile: React.FC = () => {
             alt="Logo"
             className="rounded-full cursor-pointer transition-transform duration-300 hover:scale-110 hover:shadow-lg"
             style={{
-              height: "40px",
-              width: "40px",
+              height: "45px",
+              width: "45px",
               border: "2px solid #e5e5e9",
             }}
           />
