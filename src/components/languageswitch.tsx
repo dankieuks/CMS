@@ -10,7 +10,6 @@ const LanguageSwitch: React.FC = () => {
 
   return (
     <div className="flex items-center space-x-4">
-      <GlobalOutlined style={{ fontSize: "22px", color: "#08c" }} />
       <Space wrap>
         <Select
           defaultValue="VN"

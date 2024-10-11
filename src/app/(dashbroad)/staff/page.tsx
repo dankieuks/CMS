@@ -4,12 +4,12 @@ import { BsFillUnlockFill } from "react-icons/bs";
 import { BsFillLockFill } from "react-icons/bs";
 import React, { useState } from "react";
 import { DeleteOutlined, ImportOutlined } from "@ant-design/icons";
-import { Staff } from "@/shared/types/user";
+import { Employees } from "@/shared/types/user";
 import { Button, Table } from "antd";
 import { Column } from "@/shared/types/table";
 
 const AdminPage: React.FC = () => {
-  const [staffs, setStaffs] = useState<Staff[]>([
+  const [employees, setEmployee] = useState<Employees[]>([
     {
       id: " 1",
       image:
@@ -18,6 +18,8 @@ const AdminPage: React.FC = () => {
       email: "john.doe@example.com",
       role: "Manager",
       isLocked: false,
+      hoursWorked: 40,
+      hourlyRate: 15,
     },
     {
       id: "2",
@@ -27,10 +29,12 @@ const AdminPage: React.FC = () => {
       email: "janeSmith@example.com",
       role: "Staff",
       isLocked: false,
+      hoursWorked: 40,
+      hourlyRate: 15,
     },
   ]);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
+  const [currentStaff, setCurrentStaff] = useState<Employees | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
@@ -53,7 +57,7 @@ const AdminPage: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    setStaffs((prev) => prev.filter((staff) => staff.id !== id));
+    setEmployee((prev) => prev.filter((staff) => staff.id !== id));
   };
   const columns: Column[] = [
     {
@@ -142,8 +146,8 @@ const AdminPage: React.FC = () => {
   ];
 
   return (
-    <section className="min-h-screen bg-gray-100 p-8">
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+    <section className="min-h-screen bg-gray-100 p-8 rounded-xl">
+      <div className="bg-white p-6 rounded-xl shadow-md mb-6">
         <h1 className="text-2xl font-bold mb-6">Staff Management</h1>
         <Button
           color="primary"
@@ -159,7 +163,7 @@ const AdminPage: React.FC = () => {
           Add
         </Button>
         <Table
-          dataSource={staffs}
+          dataSource={employees}
           columns={columns}
           rowKey="id"
           pagination={{

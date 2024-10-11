@@ -11,13 +11,14 @@ const Sidebar = ({ children }: Readonly<{ children: React.ReactNode }>) => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <Layout className="!min-h-screen">
+    <Layout className="!min-h-screen relative">
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         width={300}
         className="bg-slate-200 relative"
+        style={{ position: "fixed", height: "100vh" }}
       >
         <div className="flex ">
           <Image src={logo} alt="" />
@@ -40,8 +41,20 @@ const Sidebar = ({ children }: Readonly<{ children: React.ReactNode }>) => {
         </div>
         <SidebarMenu />
       </Sider>
-      <Layout className="!bg-neutral-200">
-        <Content className="!bg-transparent  p-5">{children}</Content>
+
+      <Layout
+        className="!bg-neutral-200"
+        style={{ marginLeft: collapsed ? 80 : 300 }}
+      >
+        <Content
+          className="!bg-transparent p-5"
+          style={{
+            height: "100vh",
+            overflowY: "auto",
+          }}
+        >
+          {children}
+        </Content>
       </Layout>
     </Layout>
   );

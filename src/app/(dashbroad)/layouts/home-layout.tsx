@@ -5,7 +5,7 @@ import HeaderTool from "./headerTool";
 const HomeLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
   return (
     <Sidebar>
-      <header className="!bg-neutral-200 !px-0 flex justify-between items-center mb-8">
+      <header className="!bg-neutral-200 bg-opacity-45 !px-0 flex justify-between items-center mb-8">
         <h3 className="text-2xl font-light text-typography-100 ml-5">
           Hi, <span className="font-bold">David</span>
         </h3>
