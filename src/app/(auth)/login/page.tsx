@@ -1,14 +1,26 @@
 "use client";
+import React, { useState } from "react";
+import { useLogin } from "@/shared/hooks/auth";
+
 import Image from "next/image";
 import Logo from "@public/images/logo.png";
-import { useState } from "react";
-
+import { useRouter } from "next/navigation";
+import { message } from "antd";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const handleLogin = (e: React.FormEvent) => {
+  const { loginUser } = useLogin();
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const success = await loginUser({ email, password });
+    if (success) {
+      message.success("Successfully logged in.");
+      router.push("/home");
+    }
   };
+
   return (
     <div
       className="flex items-center justify-center h-screen bg-gray-100 "
@@ -29,7 +41,7 @@ const LoginPage = () => {
         </div>
         <div className="col-span-2 p-6">
           <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-          <form>
+          <form onSubmit={handleLogin}>
             <div className="mb-4">
               <label
                 htmlFor="email"

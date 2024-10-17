@@ -8,7 +8,7 @@ import { Product } from "@/shared/types/product";
 
 const products: Product[] = [
   {
-    id: 1,
+    id: "1",
     name: "Anna Melody Mark Hi Hid",
     price: 30000,
     image:
@@ -16,7 +16,7 @@ const products: Product[] = [
     brand: "Coca-Cola",
   },
   {
-    id: 2,
+    id: "2",
     name: "Bella",
     price: 30000,
     image:
@@ -24,7 +24,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 3,
+    id: "3",
     name: "Chloe",
     price: 30000,
     image:
@@ -32,7 +32,7 @@ const products: Product[] = [
     brand: "Fanta",
   },
   {
-    id: 4,
+    id: "4",
     name: "Diana",
     price: 30000,
     image:
@@ -40,7 +40,7 @@ const products: Product[] = [
     brand: "Coca-Cola",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -48,7 +48,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -56,7 +56,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -64,7 +64,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -72,7 +72,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -80,7 +80,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -88,7 +88,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -96,7 +96,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -104,7 +104,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -112,7 +112,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -120,7 +120,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -128,7 +128,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -136,7 +136,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -144,7 +144,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -152,31 +152,7 @@ const products: Product[] = [
     brand: "Pepsi",
   },
   {
-    id: 5,
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: 5,
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: 5,
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: 5,
+    id: "5",
     name: "Eva",
     price: 30000,
     image:
@@ -197,7 +173,7 @@ const OrderPage: React.FC = () => {
   };
 
   // Xóa sản phẩm khỏi giỏ hàng
-  const handleRemoveFromCart = (productId: number) => {
+  const handleRemoveFromCart = (productId: string = "") => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
   };
 

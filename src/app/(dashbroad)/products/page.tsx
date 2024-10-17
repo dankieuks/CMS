@@ -1,38 +1,22 @@
 "use client";
-import { BsFillUnlockFill, BsFillLockFill } from "react-icons/bs";
-import { BsPersonFillAdd } from "react-icons/bs";
-import React, { useState } from "react";
-import { DeleteOutlined, ImportOutlined } from "@ant-design/icons";
-import { Button, Table } from "antd";
-import { Column } from "@/shared/types/table";
 
-// Kiểu dữ liệu sản phẩm
-interface Product {
-  id: string;
-  image: string;
-  name: string;
-  price: number;
-  description: string;
-}
+import { BsPersonFillAdd } from "react-icons/bs";
+import React, { useEffect, useState } from "react";
+import { DeleteOutlined, ImportOutlined } from "@ant-design/icons";
+import { Button, Image, message, Table } from "antd";
+import { Column } from "@/shared/types/table";
+import {
+  useAddProduct,
+  useDeleteProduct,
+  useGetProduct,
+} from "@/shared/hooks/product";
+import { Product } from "@/shared/types/product";
 
 const ProductManagement: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: "1",
-      image: "https://via.placeholder.com/150",
-      name: "Product A",
-      price: 100,
-      description: "Description for Product A",
-    },
-    {
-      id: "2",
-      image: "https://via.placeholder.com/150",
-      name: "Product B",
-      price: 200,
-      description: "Description for Product B",
-    },
-  ]);
-
+  const { getProduct } = useGetProduct();
+  const [products, setProducts] = useState<Product[]>([]);
+  const { deleteProduct } = useDeleteProduct();
+  const { addProduct } = useAddProduct();
   const [showModal, setShowModal] = useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [image, setImage] = useState<string | null>(null);
@@ -41,7 +25,13 @@ const ProductManagement: React.FC = () => {
     price: 0,
     description: "",
   });
-
+  const fetchProducts = async () => {
+    const fetchedProducts = await getProduct();
+    setProducts(fetchedProducts);
+  };
+  useEffect(() => {
+    fetchProducts();
+  }, []);
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -63,28 +53,44 @@ const ProductManagement: React.FC = () => {
       description: "",
     });
   };
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteProduct(id);
 
-  const handleDelete = (id: string) => {
-    setProducts((prev) => prev.filter((product) => product.id !== id));
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== id)
+      );
+      message.success("Successfully deleted.");
+    } catch (error) {
+      message.error("Failed to delete user.");
+    }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (currentProduct) {
-      // // Cập nhật sản phẩm
-      // setProducts((prev) =>
-      //   prev.map((product) =>
-      //     product.id === currentProduct.id
-      //       ? { ...product, ...formData, image }
-      //       : product
-      //   )
-      // );
+      // Update product
+      setProducts((prev) =>
+        prev.map((product) =>
+          product.id === currentProduct.id
+            ? { ...product, ...formData, image: image || product.image }
+            : product
+        )
+      );
     } else {
-      // Thêm sản phẩm mới
+      // Add new product
       const newProduct: Product = {
         id: `${products.length + 1}`,
         ...formData,
         image: image || "",
       };
+      await addProduct(newProduct);
       setProducts([...products, newProduct]);
     }
     closeModal();
@@ -92,10 +98,11 @@ const ProductManagement: React.FC = () => {
 
   const columns: Column[] = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
+      title: "STT",
+      dataIndex: "index",
+      key: "index",
       align: "center",
+      render: (text: any, record: any, index: number) => <>{index + 1}</>,
     },
     {
       title: "Image",
@@ -104,13 +111,15 @@ const ProductManagement: React.FC = () => {
       align: "center",
       render: (text, record) => (
         <div className="flex justify-center items-center h-full">
-          <img
+          <Image
             src={
               record.image ||
-              "https://thanhnien.mediacdn.vn/uploaded/triquang/2017_11_12/camep_OCMA.jpg?width=500"
+              "https://png.pngtree.com/png-vector/20190710/ourmid/pngtree-user-vector-avatar-png-image_1541962.jpg"
             }
             alt="Product"
-            className="w-12 h-12 rounded-md"
+            style={{ width: "48px", height: "48px" }}
+            className="  rounded-lg
+            "
           />
         </div>
       ),
@@ -132,6 +141,7 @@ const ProductManagement: React.FC = () => {
       dataIndex: "description",
       key: "description",
       align: "center",
+      responsive: ["lg"],
     },
 
     {

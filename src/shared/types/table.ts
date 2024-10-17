@@ -4,5 +4,6 @@ export interface Column {
   dataIndex: string;
   key: string;
   align?: AlignType;
-  render?: (text: string, record: any) => JSX.Element;
+  render?: (text: string, record: any, index: number) => JSX.Element;
+  responsive?: ("xs" | "sm" | "md" | "lg" | "xl")[];
 }

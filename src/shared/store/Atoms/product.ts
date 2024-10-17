@@ -1,6 +1,11 @@
 import { Product } from "@/shared/types/product";
 import { atom } from "recoil";
 
+export const productState = atom<Product[]>({
+  key: "productState",
+  default: [],
+});
+
 // State lưu trữ giỏ hàng
 export const cartState = atom<Product[]>({
   key: "cartState",

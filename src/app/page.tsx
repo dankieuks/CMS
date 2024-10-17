@@ -1,14 +1,24 @@
 "use client";
 
-import Link from "next/link";
+import { authState } from "@/shared/store/Atoms/auth";
+
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+import { useRecoilValue } from "recoil";
 
 const RootPage = () => {
-  return (
-    <div className="flex min-h-screen">
-      <Link href="/home">dashbroad</Link>
-      <Link href="/login">Dang nhap</Link>
-    </div>
-  );
+  const auth = useRecoilValue(authState);
+  const router = useRouter();
+  useEffect(() => {
+    if (auth?.isLoggedIn && auth.accessToken) {
+      router.replace("/home");
+    } else {
+      router.replace("/login");
+    }
+  }, [auth, router]);
+
+  return null;
 };
 
 export default RootPage;
