@@ -9,14 +9,16 @@ import {
   useAddProduct,
   useDeleteProduct,
   useGetProduct,
+  useUpdateProduct,
 } from "@/shared/hooks/product";
 import { Product } from "@/shared/types/product";
 
 const ProductManagement: React.FC = () => {
   const { getProduct } = useGetProduct();
-  const [products, setProducts] = useState<Product[]>([]);
   const { deleteProduct } = useDeleteProduct();
   const { addProduct } = useAddProduct();
+  const { updateProduct } = useUpdateProduct();
+  const [products, setProducts] = useState<Product[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [image, setImage] = useState<string | null>(null);
@@ -25,13 +27,16 @@ const ProductManagement: React.FC = () => {
     price: 0,
     description: "",
   });
+
   const fetchProducts = async () => {
     const fetchedProducts = await getProduct();
     setProducts(fetchedProducts);
   };
+
   useEffect(() => {
     fetchProducts();
   }, []);
+
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -53,6 +58,7 @@ const ProductManagement: React.FC = () => {
       description: "",
     });
   };
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData((prevData) => ({
@@ -60,29 +66,27 @@ const ProductManagement: React.FC = () => {
       [name]: value,
     }));
   };
+
   const handleDelete = async (id: string) => {
     try {
       await deleteProduct(id);
-
       setProducts((prevProducts) =>
         prevProducts.filter((product) => product.id !== id)
       );
       message.success("Successfully deleted.");
     } catch (error) {
-      message.error("Failed to delete user.");
+      message.error("Failed to delete product.");
     }
   };
 
   const handleSave = async () => {
     if (currentProduct) {
-      // Update product
-      setProducts((prev) =>
-        prev.map((product) =>
-          product.id === currentProduct.id
-            ? { ...product, ...formData, image: image || product.image }
-            : product
-        )
-      );
+      const updatedProduct = {
+        ...currentProduct,
+        ...formData,
+        image: image || currentProduct.image,
+      };
+      await updateProduct(updatedProduct);
     } else {
       // Add new product
       const newProduct: Product = {

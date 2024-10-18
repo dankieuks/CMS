@@ -9,7 +9,12 @@ import { DeleteOutlined, ImportOutlined } from "@ant-design/icons";
 import { Employees } from "@/shared/types/user";
 import { Button, Image, message, Table } from "antd";
 import { Column } from "@/shared/types/table";
-import { getUsers, useAddUser, useDelete } from "@/shared/hooks/user";
+import {
+  getUsers,
+  useAddUser,
+  useDelete,
+  useUpdateUser,
+} from "@/shared/hooks/user";
 
 const AdminPage: React.FC = () => {
   const [employees, setEmployees] = useState<Employees[]>([]);
@@ -25,7 +30,7 @@ const AdminPage: React.FC = () => {
   const { fetchUsers } = getUsers();
   const { deleteUser } = useDelete();
   const { addUser } = useAddUser();
-
+  const { updateUser } = useUpdateUser();
   const getProducts = async () => {
     const users = await fetchUsers();
     setEmployees(users);
@@ -54,7 +59,7 @@ const AdminPage: React.FC = () => {
       name: "",
     });
     setImage(null);
-    setCurrentStaff(null); // Reset current staff when closing modal
+    setCurrentStaff(null);
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,16 +78,13 @@ const AdminPage: React.FC = () => {
         ...formData,
         image: image || currentStaff.image,
       };
-
-      // Update local state immediately
-      setEmployees((prev) =>
-        prev.map((user) => (user.id === currentStaff.id ? updatedUser : user))
-      );
+      await updateUser(updatedUser);
     } else {
       // Add new user
       const newUser: Employees = {
         id: `${employees.length + 1}`,
         ...formData,
+        role: "STAFF",
         image: image || "",
         isLocked: false,
       };

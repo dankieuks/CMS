@@ -43,6 +43,34 @@ export const useAddProduct = () => {
   return { addProduct };
 };
 
+export const useUpdateProduct = () => {
+  const setProducts = useSetRecoilState(productState);
+
+  const updateProduct = async (updatedProduct: Product) => {
+    try {
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/product/${updatedProduct.id}`,
+        {
+          name: updatedProduct.name,
+          price: updatedProduct.price,
+          description: updatedProduct.description,
+          image: updatedProduct.image,
+          brand: updatedProduct.brand,
+          stock: updatedProduct.stock,
+        }
+      );
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.id === updatedProduct.id ? response.data : product
+        )
+      );
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
+  };
+
+  return { updateProduct };
+};
 export const useDeleteProduct = () => {
   const setProducts = useSetRecoilState(productState);
   const deleteProduct = async (id: string) => {

@@ -12,9 +12,3 @@ export interface Employees {
   hoursWorked?: number;
   hourlyRate?: number;
 }
-export interface UpdateUser {
-  id?: string;
-  email?: string;
-  name?: string;
-  password?: string;
-}

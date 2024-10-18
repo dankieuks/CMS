@@ -52,15 +52,22 @@ export const useAddUser = () => {
 export const useUpdateUser = () => {
   const setUsers = useSetRecoilState(usersState);
 
-  const updateUser = async (updatedUser: Employees) => {
+  const updateUser = async (updateUser: Employees) => {
     try {
       const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/user/${updatedUser.id}`,
-        updatedUser
+        `${process.env.NEXT_PUBLIC_API_URL}/user/${updateUser.id}`,
+        {
+          name: updateUser.name,
+          email: updateUser.email,
+          role: updateUser.role,
+          isLocked: updateUser.isLocked,
+          hoursWorked: updateUser.hoursWorked,
+          hourlyRate: updateUser.hourlyRate,
+        }
       );
-      const updatedUsers = setUsers((prevUsers) =>
+      setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user.id === updatedUser.id ? response.data : user
+          user.id === updateUser.id ? response.data : user
         )
       );
       console.log(response);
