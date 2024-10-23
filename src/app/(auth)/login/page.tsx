@@ -14,10 +14,14 @@ const LoginPage = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const success = await loginUser({ email, password });
+
     if (success) {
       message.success("Successfully logged in.");
       router.push("/home");
+    } else {
+      message.error("Login failed. Please check your credentials.");
     }
   };
 

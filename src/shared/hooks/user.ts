@@ -3,7 +3,7 @@ import axios from "axios";
 import { usersState } from "../store/Atoms/user";
 import { Employees } from "@/shared/types/user";
 
-export const getUsers = () => {
+export const useGetUser = () => {
   const setUsers = useSetRecoilState(usersState);
 
   const fetchUsers = async (): Promise<Employees[]> => {
@@ -35,7 +35,9 @@ export const useAddUser = () => {
 
     formData.append("name", newUser.name);
     formData.append("email", newUser.email);
-    formData.append("password", newUser.password);
+    if (newUser.password) {
+      formData.append("password", newUser.password);
+    }
 
     if (newUser.image) {
       formData.append("image", newUser.image);
@@ -76,7 +78,9 @@ export const useUpdateUser = () => {
 
     formData.append("name", updateUser.name);
     formData.append("email", updateUser.email);
-    formData.append("password", updateUser.password);
+    if (updateUser.password) {
+      formData.append("password", updateUser.password);
+    }
 
     if (updateUser.image) {
       formData.append("image", updateUser.image);
@@ -132,4 +136,28 @@ export const useDelete = () => {
   };
 
   return { deleteUser };
+};
+
+export const useLockUser = () => {
+  const setUsers = useSetRecoilState(usersState);
+
+  const lockUser = async (id: string) => {
+    try {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/user/${id}/lock`
+      );
+
+      setUsers((prevUsers) => {
+        return prevUsers.map((user) => (user.id === id ? response.data : user));
+      });
+    } catch (error: any) {
+      if (error.response) {
+        console.error(error.response.data);
+      } else {
+        console.error("Đã xảy ra lỗi:", error.message);
+      }
+    }
+  };
+
+  return { lockUser };
 };

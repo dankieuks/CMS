@@ -10,9 +10,10 @@ import { Employees } from "@/shared/types/user";
 import { Button, Image, message, Table } from "antd";
 import { Column } from "@/shared/types/table";
 import {
-  getUsers,
   useAddUser,
   useDelete,
+  useGetUser,
+  useLockUser,
   useUpdateUser,
 } from "@/shared/hooks/user";
 
@@ -28,17 +29,18 @@ const AdminPage: React.FC = () => {
     image: null as File | null,
   });
 
-  const { fetchUsers } = getUsers();
+  const { fetchUsers } = useGetUser();
   const { deleteUser } = useDelete();
   const { addUser } = useAddUser();
   const { updateUser } = useUpdateUser();
-  const getProducts = async () => {
+  const { lockUser } = useLockUser();
+  const getUsers = async () => {
     const users = await fetchUsers();
     setEmployees(users);
   };
 
   useEffect(() => {
-    getProducts();
+    getUsers();
   }, []);
 
   const openModal = () => {
@@ -56,7 +58,6 @@ const AdminPage: React.FC = () => {
       image: null,
     });
   };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -94,7 +95,7 @@ const AdminPage: React.FC = () => {
         message.success("User added successfully");
       }
 
-      await getProducts();
+      await getUsers();
     } catch (error: any) {
       const response = error.response?.data;
       console.log("Error Response:", response.message);
@@ -118,6 +119,10 @@ const AdminPage: React.FC = () => {
     } catch (error) {
       message.error("Failed to delete user.");
     }
+  };
+  const handLockUser = async (id: string) => {
+    await lockUser(id);
+    await getUsers();
   };
 
   const columns: Column[] = [
@@ -172,7 +177,8 @@ const AdminPage: React.FC = () => {
       key: "isLocked",
       align: "center",
       render: (text, record) => (
-        <Button>
+        <Button onClick={() => handLockUser(record.id)}>
+         
           {record.isLocked ? <BsFillLockFill /> : <BsFillUnlockFill />}
         </Button>
       ),
