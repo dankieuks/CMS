@@ -14,10 +14,6 @@ import {
 import { Product } from "@/shared/types/product";
 
 const ProductManagement: React.FC = () => {
-  const { getProduct } = useGetProduct();
-  const { deleteProduct } = useDeleteProduct();
-  const { addProduct } = useAddProduct();
-  const { updateProduct } = useUpdateProduct();
   const [products, setProducts] = useState<Product[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
@@ -25,24 +21,23 @@ const ProductManagement: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     price: 0,
+    brand: "",
     description: "",
+    image: null as File | null,
   });
 
-  const fetchProducts = async () => {
+  const { getProduct } = useGetProduct();
+  const { deleteProduct } = useDeleteProduct();
+  const { addProduct } = useAddProduct();
+  const { updateProduct } = useUpdateProduct();
+  const getProducts = async () => {
     const fetchedProducts = await getProduct();
     setProducts(fetchedProducts);
   };
 
   useEffect(() => {
-    fetchProducts();
+    getProducts();
   }, []);
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImage(URL.createObjectURL(file));
-    }
-  };
 
   const openModal = () => {
     setShowModal(true);
@@ -55,18 +50,58 @@ const ProductManagement: React.FC = () => {
     setFormData({
       name: "",
       price: 0,
+      brand: "",
       description: "",
+      image: null,
     });
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (e.target instanceof HTMLInputElement && e.target.type === "file") {
+      const file = e.target.files?.[0];
+      if (file) {
+        setImage(URL.createObjectURL(file));
+      }
+    }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFormData({ ...formData, image: e.target.files[0] });
+    }
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form Data before submit:", formData);
+    if (!currentProduct && !formData.image) {
+      message.error("Image is required for new users.");
+      return;
+    }
+    try {
+      if (currentProduct) {
+        const updatedProduct: Product = {
+          ...currentProduct,
+          ...formData,
+          image: image || currentProduct.image,
+        };
+        await updateProduct(updatedProduct);
+        message.success("Product updated Successfully ");
+      } else {
+        await addProduct(formData);
+        message.success("Product added successfully ");
+      }
+      await getProducts();
+    } catch {}
+
+    closeModal();
+  };
   const handleDelete = async (id: string) => {
     try {
       await deleteProduct(id);
@@ -75,29 +110,11 @@ const ProductManagement: React.FC = () => {
       );
       message.success("Successfully deleted.");
     } catch (error) {
-      message.error("Failed to delete product.");
+      console.error("Error during form submission:", error);
+      message.error("Failed to save user.");
+    } finally {
+      closeModal();
     }
-  };
-
-  const handleSave = async () => {
-    if (currentProduct) {
-      const updatedProduct = {
-        ...currentProduct,
-        ...formData,
-        image: image || currentProduct.image,
-      };
-      await updateProduct(updatedProduct);
-    } else {
-      // Add new product
-      const newProduct: Product = {
-        id: `${products.length + 1}`,
-        ...formData,
-        image: image || "",
-      };
-      await addProduct(newProduct);
-      setProducts([...products, newProduct]);
-    }
-    closeModal();
   };
 
   const columns: Column[] = [
@@ -163,7 +180,9 @@ const ProductManagement: React.FC = () => {
               setFormData({
                 name: record.name,
                 price: record.price,
+                brand: record.brand,
                 description: record.description,
+                image: record.image,
               });
               openModal();
             }}
@@ -221,16 +240,24 @@ const ProductManagement: React.FC = () => {
       </div>
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white p-6 rounded-lg shadow-md"
+          >
             <h2 className="text-xl font-bold mb-4">
               {currentProduct ? "Edit Product" : "Add Product"}
             </h2>
-            {image && (
+            {formData.image && (
               <div className="mb-4 flex justify-center">
-                <img
-                  src={image}
+                <Image
+                  src={
+                    formData.image instanceof File
+                      ? URL.createObjectURL(formData.image)
+                      : ""
+                  }
                   alt="Preview"
-                  className="w-32 h-32 object-cover rounded-md border-4 border-gray-300"
+                  style={{ width: "128px", height: "128px" }}
+                  className="object-cover rounded-full border-4 border-gray-300"
                 />
               </div>
             )}
@@ -239,7 +266,7 @@ const ProductManagement: React.FC = () => {
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleImageChange}
+                onChange={handleFileChange}
                 className="w-full px-3 py-2 border rounded-lg"
               />
             </div>
@@ -249,9 +276,8 @@ const ProductManagement: React.FC = () => {
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={handleInputChange}
+                required
                 className="w-full px-3 py-2 border rounded-lg"
               />
             </div>
@@ -261,32 +287,44 @@ const ProductManagement: React.FC = () => {
                 type="number"
                 name="price"
                 value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: +e.target.value })
-                }
+                onChange={handleInputChange}
+                required
                 className="w-full px-3 py-2 border rounded-lg"
               />
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Brand</label>
+                <select
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg"
+                >
+                  <option value="">Select a brand</option>
+                  <option value="BrandA">Đồ uống</option>
+                  <option value="BrandB">Đồ Ăn</option>
+                </select>
+              </div>
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium">Description</label>
               <textarea
                 name="description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={handleInputChange}
+                required
                 className="w-full px-3 py-2 border rounded-lg"
               />
             </div>
             <div className="flex space-x-4">
-              <Button color="primary" variant="solid" onClick={handleSave}>
+              <Button color="primary" variant="solid" htmlType="submit">
                 Save
               </Button>
               <Button color="danger" variant="outlined" onClick={closeModal}>
                 Cancel
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </section>

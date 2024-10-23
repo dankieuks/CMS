@@ -2,8 +2,8 @@ export interface Employees {
   id?: string;
   email: string;
   name: string;
-  password?: string;
-  image?: string | null;
+  password: string;
+  image: string | File | null;
   role?: string;
   lastLogin?: Date | null;
   createdAt?: Date;

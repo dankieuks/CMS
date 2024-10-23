@@ -28,15 +28,33 @@ export const useAddProduct = () => {
   const setProducts = useSetRecoilState(productState);
 
   const addProduct = async (newProduct: Product) => {
+    const formData = new FormData();
+
+    formData.append("name", newProduct.name);
+    formData.append("price", newProduct.price.toString());
+    formData.append("description", newProduct.description);
+    formData.append("brand", newProduct.brand);
+    if (newProduct.image) {
+      formData.append("image", newProduct.image);
+    }
+
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/product`,
-        newProduct
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
 
       setProducts((prevProducts) => [...prevProducts, response.data]);
     } catch (error) {
-      console.error("Error adding product:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Error adding user:", error.message);
+        console.error("Response:", error.response);
+      } else {
+        console.error("Unexpected error:", error);
+      }
     }
   };
 
@@ -56,7 +74,6 @@ export const useUpdateProduct = () => {
           description: updatedProduct.description,
           image: updatedProduct.image,
           brand: updatedProduct.brand,
-          stock: updatedProduct.stock,
         }
       );
       setProducts((prevProducts) =>

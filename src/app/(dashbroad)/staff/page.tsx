@@ -22,9 +22,10 @@ const AdminPage: React.FC = () => {
   const [currentStaff, setCurrentStaff] = useState<Employees | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
-    name: "",
+    image: null as File | null,
   });
 
   const { fetchUsers } = getUsers();
@@ -40,57 +41,71 @@ const AdminPage: React.FC = () => {
     getProducts();
   }, []);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImage(URL.createObjectURL(file));
-    }
-  };
-
   const openModal = () => {
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
+    setImage(null);
+    setCurrentStaff(null);
     setFormData({
       email: "",
       password: "",
       name: "",
+      image: null,
     });
-    setImage(null);
-    setCurrentStaff(null);
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleSave = async () => {
-    if (currentStaff) {
-      // Update user
-      const updatedUser: Employees = {
-        ...currentStaff,
-        ...formData,
-        image: image || currentStaff.image,
-      };
-      await updateUser(updatedUser);
-    } else {
-      // Add new user
-      const newUser: Employees = {
-        id: `${employees.length + 1}`,
-        ...formData,
-        role: "STAFF",
-        image: image || "",
-        isLocked: false,
-      };
-      await addUser(newUser);
-      setEmployees((prev) => [...prev, newUser]);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(URL.createObjectURL(file));
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFormData({ ...formData, image: e.target.files[0] });
+    }
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form Data before submit:", formData);
+
+    if (!currentStaff && !formData.image) {
+      message.error("Image is required for new users.");
+      return;
+    }
+
+    try {
+      if (currentStaff) {
+        const updatedUser: Employees = {
+          ...currentStaff,
+          ...formData,
+          image: formData.image || currentStaff.image,
+        };
+        await updateUser(updatedUser);
+        message.success("User updated successfully");
+      } else {
+        await addUser(formData);
+        message.success("User added successfully");
+      }
+
+      await getProducts();
+    } catch (error: any) {
+      const response = error.response?.data;
+      console.log("Error Response:", response.message);
+
+      if (response?.message) {
+        message.error(response.message);
+      } else {
+        message.error("An error occurred. Please try again.");
+      }
+    }
+
     closeModal();
   };
 
@@ -178,6 +193,7 @@ const AdminPage: React.FC = () => {
                 name: record.name,
                 email: record.email,
                 password: record.password,
+                image: record.image,
               });
               openModal();
             }}
@@ -221,14 +237,21 @@ const AdminPage: React.FC = () => {
       </div>
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white p-6 rounded-lg shadow-md"
+          >
             <h2 className="text-xl font-bold mb-4">
               {currentStaff ? "Edit Employee" : "Add Employee"}
             </h2>
-            {image && (
+            {formData.image && (
               <div className="mb-4 flex justify-center">
                 <Image
-                  src={image}
+                  src={
+                    formData.image instanceof File
+                      ? URL.createObjectURL(formData.image)
+                      : ""
+                  }
                   alt="Preview"
                   style={{ width: "128px", height: "128px" }}
                   className="object-cover rounded-full border-4 border-gray-300"
@@ -240,7 +263,7 @@ const AdminPage: React.FC = () => {
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleImageChange}
+                onChange={handleFileChange}
                 className="w-full px-3 py-2 border rounded-lg"
               />
             </div>
@@ -250,8 +273,9 @@ const AdminPage: React.FC = () => {
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded-lg"
+                required
               />
             </div>
             <div className="mb-4">
@@ -260,8 +284,9 @@ const AdminPage: React.FC = () => {
                 type="email"
                 name="email"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded-lg"
+                required
               />
             </div>
             <div className="mb-4">
@@ -270,20 +295,22 @@ const AdminPage: React.FC = () => {
                 type="password"
                 name="password"
                 value={formData.password}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded-lg"
+                required
               />
             </div>
 
             <div className="flex space-x-4">
-              <Button color="primary" variant="solid" onClick={handleSave}>
+              <Button color="primary" variant="solid" htmlType="submit">
                 Save
               </Button>
+
               <Button color="danger" variant="outlined" onClick={closeModal}>
                 Cancel
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </section>
