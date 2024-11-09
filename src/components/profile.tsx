@@ -4,13 +4,16 @@ import {
   SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Dropdown, MenuProps, message, Space } from "antd";
+import { Dropdown, Image, MenuProps, message, Space } from "antd";
 import React from "react";
 import Logo from "@public/images/logo.png";
 import { useLogout } from "@/shared/hooks/auth";
+import { useRecoilValue } from "recoil";
+import { authState } from "@/shared/store/Atoms/auth";
 
 const Profile: React.FC = () => {
   const { logoutUser } = useLogout();
+  const auth = useRecoilValue(authState);
   const items: MenuProps["items"] = [
     {
       label: "View Profile",
@@ -49,10 +52,10 @@ const Profile: React.FC = () => {
     <div className="flex items-center">
       <Space wrap>
         <Dropdown menu={menuProps} placement="bottom">
-          <img
-            src={Logo.src}
+          <Image
+            src={typeof auth.user?.image === "string" ? auth.user.image : ""}
             alt="Logo"
-            className="rounded-full cursor-pointer transition-transform duration-300 hover:scale-110 hover:shadow-lg"
+            className="rounded-full cursor-pointer  hover:scale-110 hover:shadow-lg"
             style={{
               height: "45px",
               width: "45px",

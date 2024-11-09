@@ -19,7 +19,6 @@ export const useLogin = () => {
       const { accessToken } = response.data;
       const decodedToken = jwtDecode<{ exp: number }>(accessToken);
 
-
       const currentTime = Date.now() / 1000;
       if (decodedToken.exp < currentTime) {
         throw new Error("Token has expired");
@@ -38,7 +37,6 @@ export const useLogin = () => {
       return false;
     }
   };
-
 
   const logoutUser = () => {
     setAuth({

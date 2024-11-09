@@ -1,165 +1,11 @@
 "use client";
-import React, { useState } from "react";
-import { BiMessageSquareAdd } from "react-icons/bi";
-import { QRCodeCanvas } from "qrcode.react"; // Import component tạo mã QR
-import { selectedBrandState } from "@/shared/store/Atoms/product";
-import { useRecoilState } from "recoil";
+import React, { useEffect, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
+import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { Product } from "@/shared/types/product";
-
-const products: Product[] = [
-  {
-    id: "1",
-    name: "Anna Melody Mark Hi Hid",
-    price: 30000,
-    image:
-      "https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2023/11/7/uong-nuoc-cam-16993504421751885406385.jpg",
-    brand: "Coca-Cola",
-  },
-  {
-    id: "2",
-    name: "Bella",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxLkT7moPARzeQ21Q3JFhoARF-m3COjrtU0g&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "3",
-    name: "Chloe",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdQHOC-AYakD0LnDL75zoLyfV3umld0KDyOA&s",
-    brand: "Fanta",
-  },
-  {
-    id: "4",
-    name: "Diana",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNaosiocCMIx_w8MdlmGOgEjOyAMd8BdOU4A&s",
-    brand: "Coca-Cola",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-  {
-    id: "5",
-    name: "Eva",
-    price: 30000,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAmhu7EhD0O24wY2ix9c3JNEzTynjsV2YMw&s",
-    brand: "Pepsi",
-  },
-];
+import { useGetProduct } from "@/shared/hooks/product";
+import { Image } from "antd";
 
 const OrderPage: React.FC = () => {
   const [cart, setCart] = useState<Product[]>([]);
@@ -167,22 +13,34 @@ const OrderPage: React.FC = () => {
   const [selectedTable, setSelectedTable] = useState<string>("");
   const [showQRCode, setShowQRCode] = useState<boolean>(false);
 
-  // Thêm sản phẩm vào giỏ hàng
+  const { getProduct } = useGetProduct();
+  const products = useRecoilValue(productState);
+  const [selectedBrand, setSelectedBrand] = useRecoilState(selectedBrandState);
+  const getProducts = async () => {
+    await getProduct();
+  };
+
+  // useEffect(() => {
+  //   getProducts();
+  // }, []);
+
   const handleAddToCart = (product: Product) => {
     setCart((prevCart) => [...prevCart, product]);
   };
 
-  // Xóa sản phẩm khỏi giỏ hàng
-  const handleRemoveFromCart = (productId: string = "") => {
+  const handleRemoveFromCart = (productId: string) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
   };
 
-  // Tìm kiếm sản phẩm
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products
+    .filter((product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter(
+      (product) => selectedBrand === "" || product.brand === selectedBrand
+    );
 
-  // In bill
+  // Bill generation
   const handlePrintBill = () => {
     const billContent = cart
       .map((item) => `${item.name} - ${item.price.toLocaleString()} VND`)
@@ -197,10 +55,9 @@ const OrderPage: React.FC = () => {
       ----------------------
       Tổng cộng: ${totalAmount.toLocaleString()} VND
     `;
-    alert(bill); // Thay bằng tính năng in bill thực tế
+    alert(bill);
   };
 
-  // Thanh toán và hiển thị mã QR
   const handleCheckout = () => {
     if (!selectedTable) {
       alert("Vui lòng chọn bàn trước khi thanh toán.");
@@ -209,27 +66,26 @@ const OrderPage: React.FC = () => {
 
     const totalAmount = cart.reduce((total, item) => total + item.price, 0);
     alert(
-      `Bàn ${selectedTable} phai thanh toán với tổng số tiền ${totalAmount.toLocaleString()} VND`
+      `Bàn ${selectedTable} cần thanh toán với tổng số tiền ${totalAmount.toLocaleString()} VND`
     );
 
-    // Hiển thị mã QR sau khi thanh toán
     setShowQRCode(true);
   };
 
-  // Tạo chuỗi mã QR từ thông tin thanh toán
   const bankName = "Ngân hàng BIDV";
-  const bankAccount = "4505046869"; // Đây là số tài khoản
+  const bankAccount = "4505046869";
 
   const getQRCodeValue = () => {
     const totalAmount = cart.reduce((total, item) => total + item.price, 0);
     return `Ngân hàng: ${bankName}\nSố tài khoản: ${bankAccount}\nTổng thanh toán: ${totalAmount.toLocaleString()} VND\nBàn: ${selectedTable}`;
   };
+
   const brands = ["Coca-Cola", "Pepsi", "Fanta"];
-  const [selectedBrand, setSelectedBrand] = useRecoilState(selectedBrandState);
+
   return (
     <section className="bg-gray-100 p-6 rounded-xl flex flex-col ">
       <header className="flex justify-between items-center bg-white shadow-lg px-6 py-4 mb-4 rounded-xl">
-        {/* Tabs cho các thương hiệu */}
+        {/* Tabs for product brands */}
         <div className="flex space-x-4">
           <button
             onClick={() => setSelectedBrand("")}
@@ -255,7 +111,7 @@ const OrderPage: React.FC = () => {
             </button>
           ))}
         </div>
-        {/* Tìm kiếm sản phẩm */}
+
         <input
           type="text"
           placeholder="Tìm kiếm sản phẩm..."
@@ -264,7 +120,6 @@ const OrderPage: React.FC = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        {/* In Bill Button */}
         <button
           className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
           onClick={handlePrintBill}
@@ -283,8 +138,12 @@ const OrderPage: React.FC = () => {
                 onClick={() => handleAddToCart(product)}
                 className="flex flex-col items-center p-2 border rounded-lg bg-gray-50 shadow hover:shadow-lg transition duration-300 ease-in-out h-44 w-full"
               >
-                <img
-                  src={product.image}
+                <Image
+                  src={
+                    typeof product.image === "string"
+                      ? product.image
+                      : undefined
+                  }
                   alt={product.name}
                   className="w-[90px] h-[90px] object-cover rounded-md mb-1"
                 />
@@ -345,10 +204,7 @@ const OrderPage: React.FC = () => {
                     {item.price.toLocaleString()}
                   </div>
                   <div className="col-span-1 text-center">
-                    <button
-                      onClick={() => handleRemoveFromCart(item.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition duration-300 ease-in-out"
-                    >
+                    <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition duration-300 ease-in-out">
                       Xóa
                     </button>
                   </div>
@@ -367,12 +223,12 @@ const OrderPage: React.FC = () => {
             </div>
           )}
 
-          {/* Container chừa sẵn cho mã QR */}
+          {/* QR Code for payment */}
           <div
             className={`mt-4 flex flex-col items-center justify-center text-center transition-all duration-300 ease-in-out ${
               showQRCode ? "block" : "hidden"
             }`}
-            style={{ height: showQRCode ? "auto" : "150px" }} // Chiều cao cố định khi không hiển thị mã QR
+            style={{ height: showQRCode ? "auto" : "150px" }}
           >
             <h3 className="font-semibold mb-2">Quét mã QR để thanh toán:</h3>
             <QRCodeCanvas

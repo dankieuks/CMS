@@ -1,9 +1,14 @@
-"use client"
-import React, { ReactNode } from 'react'
-import { RecoilRoot } from 'recoil'
+"use client";
+import RootPage from "@/app/page";
+import React, { ReactNode } from "react";
+import { RecoilRoot } from "recoil";
 
 const RecoilContextProvider = ({ children }: { children: ReactNode }) => {
-    return (<RecoilRoot>{children}</RecoilRoot>)
-}
+  return (
+    <RecoilRoot>
+      <RootPage>{children}</RootPage>
+    </RecoilRoot>
+  );
+};
 
-export default RecoilContextProvider
+export default RecoilContextProvider;

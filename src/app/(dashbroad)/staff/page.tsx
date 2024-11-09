@@ -97,14 +97,9 @@ const AdminPage: React.FC = () => {
 
       await getUsers();
     } catch (error: any) {
-      const response = error.response?.data;
-      console.log("Error Response:", response.message);
-
-      if (response?.message) {
-        message.error(response.message);
-      } else {
-        message.error("An error occurred. Please try again.");
-      }
+      const responseMessage =
+        error.response?.message || "An error occurred. Please try again.";
+      message.error(responseMessage);
     }
 
     closeModal();
@@ -178,8 +173,11 @@ const AdminPage: React.FC = () => {
       align: "center",
       render: (text, record) => (
         <Button onClick={() => handLockUser(record.id)}>
-         
-          {record.isLocked ? <BsFillLockFill /> : <BsFillUnlockFill />}
+          {record.isLocked ? (
+            <BsFillLockFill className="text-red-600" />
+          ) : (
+            <BsFillUnlockFill className="text-blue-600" />
+          )}
         </Button>
       ),
     },

@@ -14,7 +14,7 @@ export const useGetProduct = () => {
       return respone.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Lỗi khi lấy người dùng:", error.message);
+        console.error("Lỗi khi lấy san pham:", error.message);
         console.error("Chi tiết lỗi từ server:", error.response);
       } else {
         console.error("Lỗi không mong đợi:", error);
