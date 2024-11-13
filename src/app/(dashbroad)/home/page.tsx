@@ -5,21 +5,25 @@ import {
   AiFillTags,
   AiOutlineUserAdd,
 } from "react-icons/ai";
-import React, { useEffect, useState } from "react";
-import { useGetMe } from "@/shared/hooks/user";
+import React, { useEffect } from "react";
+import { useRecoilState } from "recoil";
+import { productState } from "@/shared/store/Atoms/product";
+import { useGetProduct } from "@/shared/hooks/product";
 
 const page = () => {
-  const salesData = [
-    { name: "Mon", online: 10, offline: 20 },
-    { name: "Tue", online: 15, offline: 25 },
-    { name: "Wed", online: 12, offline: 30 },
-    { name: "Thu", online: 18, offline: 22 },
-    { name: "Fri", online: 14, offline: 28 },
-    { name: "Sat", online: 20, offline: 35 },
-    { name: "Sun", online: 25, offline: 40 },
-  ];
+  const { getProduct } = useGetProduct();
+  const [products, setProducts] = useRecoilState(productState);
 
-  const products = [
+  const getProducts = async () => {
+    const data = await getProduct();
+    setProducts(data);
+  };
+
+  useEffect(() => {
+    getProducts();
+  }, []);
+
+  const product = [
     { id: 1, name: "Home Decor Range", popularity: 45, sales: "45%" },
     {
       id: 2,
@@ -30,15 +34,6 @@ const page = () => {
     { id: 3, name: "Bathroom Essentials", popularity: 18, sales: "1.8%" },
     { id: 4, name: "Apple Smartwatches", popularity: 25, sales: "25%" },
   ];
-  const { getMeData } = useGetMe();
-
-  useEffect(() => {
-    const loadUserData = async () => {
-      await getMeData();
-    };
-
-    loadUserData();
-  }, []);
 
   return (
     <div className="p-6 grid grid-cols-2 gap-6">
@@ -51,7 +46,7 @@ const page = () => {
               color: "bg-red-400",
               background: "bg-red-200",
               label: "Total Sales",
-              value: "$1k",
+              value: products.length,
             },
             {
               icon: <AiOutlineOrderedList />,
@@ -104,7 +99,7 @@ const page = () => {
             </tr>
           </thead>
           <tbody>
-            {products.map((product, index) => (
+            {product.map((product, index) => (
               <tr key={product.id} className="border-b">
                 <td className="py-3">{index + 1}</td>
                 <td className="py-3">{product.name}</td>

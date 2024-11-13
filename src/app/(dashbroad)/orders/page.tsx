@@ -12,17 +12,21 @@ const OrderPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedTable, setSelectedTable] = useState<string>("");
   const [showQRCode, setShowQRCode] = useState<boolean>(false);
+  const [selectedBrand, setSelectedBrand] = useRecoilState(selectedBrandState);
 
   const { getProduct } = useGetProduct();
-  const products = useRecoilValue(productState);
-  const [selectedBrand, setSelectedBrand] = useRecoilState(selectedBrandState);
+  const [products, setProducts] = useRecoilState(productState);
+
   const getProducts = async () => {
-    await getProduct();
+    const data = await getProduct();
+    setProducts(data);
   };
 
-  // useEffect(() => {
-  //   getProducts();
-  // }, []);
+  useEffect(() => {
+    getProducts();
+  }, []);
+
+  console.log(products);
 
   const handleAddToCart = (product: Product) => {
     setCart((prevCart) => [...prevCart, product]);
@@ -147,7 +151,7 @@ const OrderPage: React.FC = () => {
                   alt={product.name}
                   className="w-[90px] h-[90px] object-cover rounded-md mb-1"
                 />
-                <span className="text-center h-[45px] font-semibold text-gray-700 w-full truncate-2-lines">
+                <span className="text-center h-[45px] font-semibold text-gray-700 w-full truncate-2-lines overflow-hidden text-ellipsis line-clamp-2">
                   {product.name}
                 </span>
                 <span className="text-center font-bold text-blue-600 mb-1">
@@ -205,7 +209,7 @@ const OrderPage: React.FC = () => {
                   </div>
                   <div className="col-span-1 text-center">
                     <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition duration-300 ease-in-out">
-                      Xóa
+                      X
                     </button>
                   </div>
                 </li>
@@ -213,47 +217,24 @@ const OrderPage: React.FC = () => {
             )}
           </ul>
 
-          {cart.length > 0 && (
-            <div className="mt-2 text-right text-gray-800 font-bold">
-              Tổng cộng:{" "}
-              {cart
-                .reduce((total, item) => total + item.price, 0)
-                .toLocaleString()}{" "}
-              VND
+          {showQRCode && (
+            <div className="mt-4 flex flex-col items-center justify-center">
+              <QRCodeCanvas value={getQRCodeValue()} size={200} level={"H"} />
+              <button
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
+                onClick={() => setShowQRCode(false)}
+              >
+                Đóng mã QR
+              </button>
             </div>
           )}
 
-          {/* QR Code for payment */}
-          <div
-            className={`mt-4 flex flex-col items-center justify-center text-center transition-all duration-300 ease-in-out ${
-              showQRCode ? "block" : "hidden"
-            }`}
-            style={{ height: showQRCode ? "auto" : "150px" }}
+          <button
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md mt-4 transition duration-300 ease-in-out"
+            onClick={handleCheckout}
           >
-            <h3 className="font-semibold mb-2">Quét mã QR để thanh toán:</h3>
-            <QRCodeCanvas
-              value={getQRCodeValue()}
-              size={150}
-              bgColor={"#ffffff"}
-              fgColor={"#000000"}
-              level={"L"}
-            />
-          </div>
-
-          <div className="left-0 w-full flex justify-between bg-white shadow-lg p-4 rounded-md">
-            <button
-              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
-              onClick={handleCheckout}
-            >
-              Thanh toán
-            </button>
-            <button
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
-              onClick={handlePrintBill}
-            >
-              In Bill
-            </button>
-          </div>
+            Thanh toán
+          </button>
         </div>
       </div>
     </section>
