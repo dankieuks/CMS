@@ -4,6 +4,7 @@ import { authState } from "../store/Atoms/auth";
 import axios from "axios";
 import { ILoginRequest } from "../types/auth";
 import { useRouter } from "next/navigation";
+import { enqueueSnackbar } from "notistack";
 
 export const useLogin = () => {
   const [auth, setAuth] = useRecoilState(authState);
@@ -28,8 +29,12 @@ export const useLogin = () => {
         isLoggedIn: true,
         user: jwtDecode(accessToken),
         accessToken,
+        remember: true,
       });
-
+      enqueueSnackbar("Login successful", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
       localStorage.setItem("authToken", accessToken);
       return true;
     } catch (error) {
@@ -42,7 +47,8 @@ export const useLogin = () => {
     setAuth({
       isLoggedIn: false,
       user: null,
-      accessToken: null,
+      accessToken: undefined,
+      remember: false,
     });
     localStorage.removeItem("authToken");
     router.push("/login");
@@ -58,10 +64,14 @@ export const useLogout = () => {
     setAuth({
       isLoggedIn: false,
       user: null,
-      accessToken: null,
+      accessToken: undefined,
+      remember: false,
     });
     localStorage.removeItem("authToken");
-
+    enqueueSnackbar("LoginOut successful", {
+      variant: "success",
+      autoHideDuration: 1500,
+    });
     router.push("/login");
   };
 
