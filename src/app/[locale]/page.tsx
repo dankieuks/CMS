@@ -5,17 +5,18 @@ import { useRecoilValue } from "recoil";
 import { useRouter } from "next/navigation";
 import { isTokenExpired } from "@/shared/utils/tokenExpired";
 import { authState } from "@/shared/store/Atoms/auth";
+import LoadingPage from "@/components/loading";
 
-export default function RootPage({ children }: { children: ReactNode }) {
+function useTokenCheck() {
   const auth = useRecoilValue(authState);
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const redirectToLoginOrHome = () => {
-      if (auth?.accessToken) {
-        if (isTokenExpired(auth.accessToken)) {
-          localStorage.removeItem("authState");
+    const checkToken = () => {
+      const token = auth?.accessToken || localStorage.getItem("authToken");
+      if (token) {
+        if (isTokenExpired(token)) {
+          localStorage.removeItem("authToken");
           router.replace("/login");
         } else {
           router.replace("/home");
@@ -25,10 +26,21 @@ export default function RootPage({ children }: { children: ReactNode }) {
       }
     };
 
-    redirectToLoginOrHome();
-    setLoading(false);
-  }, [auth, router]);
+    checkToken();
 
- 
-  return loading ? <div>Loading...</div> : <div>{children}</div>;
+    const interval = setInterval(checkToken, 600000);
+
+    return () => clearInterval(interval);
+  }, [auth, router]);
+}
+
+export default function RootPage({ children }: { children: ReactNode }) {
+  const [loading, setLoading] = useState(true);
+  useTokenCheck();
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 300);
+  }, []);
+
+  return loading ? <LoadingPage /> : <>{children}</>;
 }

@@ -1,30 +1,27 @@
 "use client";
 import React, { useState } from "react";
 import { useLogin } from "@/shared/hooks/auth";
-
 import Image from "next/image";
 import Logo from "@public/images/logo.png";
 import { useRouter } from "next/navigation";
-import { useRecoilValue } from "recoil";
-import { authState } from "@/shared/store/Atoms/auth";
+
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { loginUser } = useLogin();
   const router = useRouter();
-  const auth = useRecoilValue(authState);
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const success = await loginUser({ email, password });
 
     if (success) {
-      router.push("/home");
+      router.replace("/home");
     } else {
-      router.push("/login");
+      router.replace("/login");
     }
   };
-  console.log(auth);
+
   return (
     <div
       className="flex items-center justify-center h-screen bg-gray-100 "

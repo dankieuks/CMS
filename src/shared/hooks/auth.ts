@@ -18,18 +18,14 @@ export const useLogin = () => {
       );
 
       const { accessToken } = response.data;
-      const decodedToken = jwtDecode<{ exp: number }>(accessToken);
-
-      const currentTime = Date.now() / 1000;
-      if (decodedToken.exp < currentTime) {
-        throw new Error("Token has expired");
-      }
-
+      const loginTime = Date.now();
+      localStorage.setItem("loginTime", loginTime.toString());
+      console.log(loginTime);
       setAuth({
         isLoggedIn: true,
         user: jwtDecode(accessToken),
         accessToken,
-        remember: true,
+        remember: false,
       });
       enqueueSnackbar("Login successful", {
         variant: "success",
@@ -46,18 +42,7 @@ export const useLogin = () => {
     }
   };
 
-  const logoutUser = () => {
-    setAuth({
-      isLoggedIn: false,
-      user: null,
-      accessToken: undefined,
-      remember: false,
-    });
-    localStorage.removeItem("authToken");
-    router.push("/login");
-  };
-
-  return { loginUser, logoutUser, auth };
+  return { loginUser, auth };
 };
 export const useLogout = () => {
   const [auth, setAuth] = useRecoilState(authState);
@@ -75,7 +60,7 @@ export const useLogout = () => {
       variant: "success",
       autoHideDuration: 1500,
     });
-    router.push("/login");
+    router.replace("/login");
   };
 
   return { logoutUser };

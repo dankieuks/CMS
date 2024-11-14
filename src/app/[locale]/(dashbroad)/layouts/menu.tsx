@@ -52,12 +52,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ defaultSelectedKeys }) => {
       label: "Salaries",
       path: "/salarys",
     },
-    {
-      key: "7",
-      icon: <BiLogInCircle style={{ fontSize: "22px" }} />,
-      label: "Login",
-      path: "/login",
-    },
   ];
   const items = menuItems.map((item) => ({
     key: item.key,

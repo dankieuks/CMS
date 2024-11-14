@@ -6,14 +6,18 @@ import {
   AiOutlineUserAdd,
 } from "react-icons/ai";
 import React, { useEffect } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { productState } from "@/shared/store/Atoms/product";
 import { useGetProduct } from "@/shared/hooks/product";
+import { isTokenExpired } from "@/shared/utils/tokenExpired";
+import { authState } from "@/shared/store/Atoms/auth";
+import { Button } from "antd";
+import { jwtDecode } from "jwt-decode";
 
 const page = () => {
   const { getProduct } = useGetProduct();
   const [products, setProducts] = useRecoilState(productState);
-
+  const auth = useRecoilValue(authState);
   const getProducts = async () => {
     const data = await getProduct();
     setProducts(data);
@@ -34,6 +38,53 @@ const page = () => {
     { id: 3, name: "Bathroom Essentials", popularity: 18, sales: "1.8%" },
     { id: 4, name: "Apple Smartwatches", popularity: 25, sales: "25%" },
   ];
+  interface DecodedToken {
+    exp: number;
+    iat?: number;
+    sub?: string;
+  }
+  const handleCheckToken = () => {
+    const token = auth?.accessToken;
+
+    if (token) {
+      try {
+        const decoded: DecodedToken = jwtDecode(token);
+
+        const expTime = decoded.exp;
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        const timeRemainingMinutes = (expTime - currentTime) / 60;
+
+        console.log("Token đã được giải mã:", decoded);
+        console.log("Thời gian hết hạn (exp):", expTime);
+        console.log("Thời gian hiện tại:", currentTime);
+        console.log("Token còn hiệu lực:", expTime > currentTime);
+        console.log(
+          "Thời gian hết hạn còn lại:",
+          timeRemainingMinutes.toFixed(2),
+          "phút"
+        );
+      } catch (error) {
+        console.error("Token không hợp lệ:", error);
+      }
+    } else {
+      console.log("Token không tồn tại.");
+    }
+    const getElapsedTime = () => {
+      const loginTime = parseInt(localStorage.getItem("loginTime") || "0", 10);
+      const currentTime = Date.now();
+      const elapsedTimeInSeconds = Math.floor((currentTime - loginTime) / 1000); 
+
+      const minutes = Math.floor(elapsedTimeInSeconds / 60);
+      const seconds = elapsedTimeInSeconds % 60;
+
+      return { minutes, seconds };
+    };
+    const elapsedTime = getElapsedTime();
+    console.log(
+      `Đã đăng nhập được ${elapsedTime.minutes} phút ${elapsedTime.seconds} giây`
+    );
+  };
 
   return (
     <div className="p-6 grid grid-cols-2 gap-6">
@@ -110,8 +161,8 @@ const page = () => {
                         product.popularity >= 40
                           ? "bg-blue-500"
                           : product.popularity >= 20
-                            ? "bg-green-500"
-                            : "bg-purple-500"
+                          ? "bg-green-500"
+                          : "bg-purple-500"
                       } rounded-full`}
                       style={{ width: `${product.popularity}%` }}
                     ></div>
@@ -123,6 +174,7 @@ const page = () => {
           </tbody>
         </table>
       </div>
+      <Button onClick={handleCheckToken}>Check</Button>
     </div>
   );
 };

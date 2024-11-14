@@ -66,6 +66,7 @@ const Profile: React.FC = () => {
             src={typeof auth.user?.image === "string" ? auth.user.image : ""}
             alt="Logo"
             className="rounded-full cursor-pointer  hover:scale-110 hover:shadow-lg"
+            preview={false}
             style={{
               height: "45px",
               width: "45px",

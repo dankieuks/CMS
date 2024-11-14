@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Select, Space } from "antd"; // Import Select and Space from Ant Design
+import { Select, Space } from "antd";
 
 const LanguageSwitcher: React.FC = () => {
   const router = useRouter();
@@ -10,18 +10,23 @@ const LanguageSwitcher: React.FC = () => {
   const [currentLocale, setCurrentLocale] = useState<string>("en");
 
   useEffect(() => {
-    // Get language from localStorage on mount
+    // Lấy ngôn ngữ từ localStorage, mặc định là 'en' nếu không có
     const savedLocale = localStorage.getItem("language") || "en";
     setCurrentLocale(savedLocale);
-    document.cookie = `language=${savedLocale}; path=/`; // Set cookie for the language
+    document.cookie = `language=${savedLocale}; path=/`;
   }, []);
 
   const handleLocaleChange = (locale: string) => {
-    // Update localStorage and cookie when the language changes
+    // Cập nhật localStorage và cookie với ngôn ngữ mới
     localStorage.setItem("language", locale);
-    document.cookie = `language=${locale}; path=/`; // Update the cookie
+    document.cookie = `language=${locale}; path=/`;
+
+    // Cập nhật lại đường dẫn với ngôn ngữ mới
+    const newPathname = pathname.replace(`/${currentLocale}`, `/${locale}`);
+
+    // Thực hiện thay thế đường dẫn với locale mới
     setCurrentLocale(locale);
-    router.push(`/${locale}${pathname === "/" ? "" : pathname.slice(3)}`);
+    router.replace(newPathname); // Dùng replace để thay thế URL
   };
 
   return (
