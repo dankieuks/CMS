@@ -9,7 +9,6 @@ import React, { useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { productState } from "@/shared/store/Atoms/product";
 import { useGetProduct } from "@/shared/hooks/product";
-import { isTokenExpired } from "@/shared/utils/tokenExpired";
 import { authState } from "@/shared/store/Atoms/auth";
 import { Button } from "antd";
 import { jwtDecode } from "jwt-decode";

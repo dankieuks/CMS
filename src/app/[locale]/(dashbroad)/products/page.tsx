@@ -12,6 +12,7 @@ import {
   useUpdateProduct,
 } from "@/shared/hooks/product";
 import { Product } from "@/shared/types/product";
+import { enqueueSnackbar } from "notistack";
 
 const ProductManagement: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -19,6 +20,7 @@ const ProductManagement: React.FC = () => {
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
+    id: "",
     name: "",
     price: 0,
     brand: "",
@@ -48,6 +50,7 @@ const ProductManagement: React.FC = () => {
     setImage(null);
     setCurrentProduct(null);
     setFormData({
+      id: "",
       name: "",
       price: 0,
       brand: "",
@@ -92,10 +95,16 @@ const ProductManagement: React.FC = () => {
           image: image || currentProduct.image,
         };
         await updateProduct(updatedProduct);
-        message.success("Product updated Successfully ");
+        enqueueSnackbar("Add product successful", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
       } else {
         await addProduct(formData);
-        message.success("Product added successfully ");
+        enqueueSnackbar("Add product successful", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
       }
       await getProducts();
     } catch {}
@@ -178,6 +187,7 @@ const ProductManagement: React.FC = () => {
             onClick={() => {
               setCurrentProduct(record);
               setFormData({
+                id: record.id,
                 name: record.name,
                 price: record.price,
                 brand: record.brand,
@@ -213,7 +223,7 @@ const ProductManagement: React.FC = () => {
   ];
 
   return (
-    <section className="min-h-screen bg-gray-100 p-8 rounded-xl">
+    <section className="min-h-screen bg-gray-100 p-6 rounded-xl">
       <div className="bg-white p-6 rounded-xl shadow-md mb-6">
         <h1 className="text-2xl font-bold mb-6">Product Management</h1>
         <Button

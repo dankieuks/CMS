@@ -3,6 +3,7 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { productState } from "../store/Atoms/product";
 import { Product } from "../types/product";
 import axios from "axios";
+import { enqueueSnackbar } from "notistack";
 
 export const useGetProduct = () => {
   const [product, setProducts] = useRecoilState(productState);
@@ -46,7 +47,7 @@ export const useAddProduct = () => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-
+      
       setProducts((prevProducts) => [...prevProducts, response.data]);
     } catch (error) {
       if (axios.isAxiosError(error)) {
