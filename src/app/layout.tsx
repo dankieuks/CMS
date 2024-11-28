@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "@/styles/globals.css";
-import { routing } from "@/i18n/routing";
-import { notFound } from "next/navigation";
 import { getMessages } from "next-intl/server";
-import { NextIntlClientProvider } from "next-intl";
+
 import AppProviders from "@/shared/providers/app.provider";
 
 const geistSans = localFont({
@@ -25,28 +23,16 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
 }) {
-  const { locale } = await params;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (!routing.locales.includes(locale as any)) {
-    notFound();
-  }
-
-  const messages = await getMessages();
-
   return (
-    <html lang={locale} className="mdl-js antialiased">
+    <html lang="en" className="mdl-js antialiased">
       <body
         suppressHydrationWarning={true}
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextIntlClientProvider messages={messages}>
-          <AppProviders>{children}</AppProviders>
-        </NextIntlClientProvider>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

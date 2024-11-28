@@ -1,8 +1,6 @@
-import createNextIntlPlugin from "next-intl/plugin";
 import dotenv from "dotenv";
 
 dotenv.config();
-const withNextIntl = createNextIntlPlugin();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -12,4 +10,4 @@ const nextConfig = {
   reactStrictMode: false,
 };
 
-export default withNextIntl(nextConfig);
+export default nextConfig;
