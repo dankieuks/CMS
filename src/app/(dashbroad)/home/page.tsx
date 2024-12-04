@@ -12,11 +12,13 @@ import { useGetProduct } from "@/shared/hooks/product";
 import { authState } from "@/shared/store/Atoms/auth";
 import { Button } from "antd";
 import { jwtDecode } from "jwt-decode";
-
+import { useGetOrder } from "@/shared/hooks/order";
 const page = () => {
   const { getProduct } = useGetProduct();
   const [products, setProducts] = useRecoilState(productState);
   const auth = useRecoilValue(authState);
+  const { orders, getOrders } = useGetOrder(); // Sử dụng hook lấy đơn hàng
+
   const getProducts = async () => {
     const data = await getProduct();
     setProducts(data);
@@ -24,6 +26,7 @@ const page = () => {
 
   useEffect(() => {
     getProducts();
+    getOrders(); // Lấy danh sách đơn hàng khi component mount
   }, []);
 
   const product = [
@@ -72,7 +75,7 @@ const page = () => {
     const getElapsedTime = () => {
       const loginTime = parseInt(localStorage.getItem("loginTime") || "0", 10);
       const currentTime = Date.now();
-      const elapsedTimeInSeconds = Math.floor((currentTime - loginTime) / 1000); 
+      const elapsedTimeInSeconds = Math.floor((currentTime - loginTime) / 1000);
 
       const minutes = Math.floor(elapsedTimeInSeconds / 60);
       const seconds = elapsedTimeInSeconds % 60;
@@ -136,7 +139,6 @@ const page = () => {
           ))}
         </div>
       </div>
-
       <div className="col-span-2 bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-5">Top Products</h2>
         <table className="w-full table-auto">
@@ -174,6 +176,34 @@ const page = () => {
         </table>
       </div>
       <Button onClick={handleCheckToken}>Check</Button>
+      <div className="col-span-2 bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold mb-5">Orders</h2>
+        <table className="w-full table-auto">
+          <thead>
+            <tr>
+              <th className="text-left py-2">#</th>
+              <th className="text-left py-2">Customer</th>
+              <th className="text-left py-2">Table</th>
+              <th className="text-left py-2">Total Amount</th>
+              <th className="text-left py-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order, index) => (
+              <tr key={order.id} className="border-b">
+                <td className="py-3">{index + 1}</td>
+                <td className="py-3">{order.userId}</td>
+                <td className="py-3">{order.table}</td>
+                <td className="py-3">${order.totalAmount}</td>
+                <td className="py-3">{order.status}</td>{" "}
+                {/* Nếu có trạng thái đơn hàng */}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Button onClick={() => getOrders()}>Refresh Orders</Button>{" "}
+      {/* Button để refresh đơn hàng */}
     </div>
   );
 };

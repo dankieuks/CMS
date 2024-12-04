@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Table } from "antd";
 import { Employees } from "@/shared/types/user"; // Import kiểu Staff nếu đã được định nghĩa
 import { Column } from "@/shared/types/table";
+import ProtectedRoute from "@/shared/providers/auth.provider";
 
 const EmployeeSalaryTable = () => {
   // Dữ liệu danh sách nhân viên
@@ -76,19 +77,21 @@ const EmployeeSalaryTable = () => {
     },
   ];
   return (
-    <section className="min-h-screen bg-gray-100 p-8 rounded-xl">
-      <div className="bg-white p-6 rounded-xl shadow-md mb-6">
-        <h2 className="text-2xl font-bold mb-6">Employee Salary Table</h2>
-        <Table
-          dataSource={employees.map((employee) => ({
-            ...employee,
-            key: employee.id,
-          }))}
-          columns={columns}
-          pagination={false}
-        />
-      </div>
-    </section>
+    <ProtectedRoute requiredRole="ADMIN">
+      <section className="min-h-screen bg-gray-100 p-8 rounded-xl">
+        <div className="bg-white p-6 rounded-xl shadow-md mb-6">
+          <h2 className="text-2xl font-bold mb-6">Employee Salary Table</h2>
+          <Table
+            dataSource={employees.map((employee) => ({
+              ...employee,
+              key: employee.id,
+            }))}
+            columns={columns}
+            pagination={false}
+          />
+        </div>
+      </section>
+    </ProtectedRoute>
   );
 };
 

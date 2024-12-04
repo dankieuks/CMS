@@ -5,6 +5,8 @@ import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { CartItem, Product } from "@/shared/types/product";
 import { Image } from "antd";
+import axios from "axios"; // Sử dụng axios để gửi dữ liệu lên backend
+import { authState } from "@/shared/store/Atoms/auth";
 
 const OrderPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -13,9 +15,8 @@ const OrderPage: React.FC = () => {
   const [showQRCode, setShowQRCode] = useState<boolean>(false);
   const [selectedBrand, setSelectedBrand] = useRecoilState(selectedBrandState);
   const [products, setProducts] = useRecoilState(productState);
-  console.log(products);
-  console.log(cart);
-
+  const auth = useRecoilValue(authState);
+  // Hàm thêm sản phẩm vào giỏ hàng
   const handleAddToCart = (product: Product) => {
     setCart((prevCart) => {
       const existingProductIndex = prevCart.findIndex(
@@ -68,42 +69,47 @@ const OrderPage: React.FC = () => {
       (product) => selectedBrand === "" || product.brand === selectedBrand
     );
 
-  // Bill generation
-  const handlePrintBill = () => {
-    const billContent = cart
-      .map((item) => `${item.name} - ${item.price.toLocaleString()} VND`)
-      .join("\n");
-    const totalAmount = cart.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    );
-
-    const bill = `
-      Bàn: ${selectedTable || "Chưa chọn"}
-      Hóa đơn của bạn:
-      ----------------------
-      ${billContent}
-      ----------------------
-      Tổng cộng: ${totalAmount.toLocaleString()} VND
-    `;
-    alert(bill);
-  };
-
-  const handleCheckout = () => {
+  // Hàm tạo đơn hàng và gửi lên backend
+  const createOrder = async () => {
+    if (cart.length === 0) {
+      alert(
+        "Giỏ hàng hiện đang trống. Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán."
+      );
+      return;
+    }
     if (!selectedTable) {
       alert("Vui lòng chọn bàn trước khi thanh toán.");
       return;
     }
 
-    const totalAmount = cart.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    );
-    alert(
-      `Bàn ${selectedTable} cần thanh toán với tổng số tiền ${totalAmount.toLocaleString()} VND`
-    );
+    const orderData = {
+      userId: auth?.user?.id,
 
-    setShowQRCode(true);
+      items: cart.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      totalAmount: cart.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+      ),
+    };
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/order/add`,
+        orderData
+      );
+      console.log("Order created:", response.data);
+      setCart([]);
+      setSelectedTable("");
+      alert("Đơn hàng đã được tạo thành công!");
+      setShowQRCode(true);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("Đã có lỗi xảy ra khi tạo đơn hàng.");
+    }
   };
 
   const bankName = "Ngân hàng BIDV";
@@ -117,10 +123,10 @@ const OrderPage: React.FC = () => {
     return `Ngân hàng: ${bankName}\nSố tài khoản: ${bankAccount}\nTổng thanh toán: ${totalAmount.toLocaleString()} VND\nBàn: ${selectedTable}`;
   };
 
-  const brands = ["Đồ uống ", "Đồ ăn"];
+  const brands = ["Đồ uống", "Đồ ăn"];
 
   return (
-    <section className="bg-gray-100 p-5 rounded-xl flex flex-col ">
+    <section className="bg-gray-100 p-5 rounded-xl flex flex-col">
       <header className="flex justify-between items-center bg-white shadow-lg px-6 py-4 mb-3 rounded-xl">
         {/* Tabs for product brands */}
         <div className="flex space-x-4">
@@ -156,19 +162,18 @@ const OrderPage: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-
         <button
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
-          onClick={handlePrintBill}
+          onClick={() => alert("Lịch sử tạo đơn hàng")}
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
         >
-          In Bill
+          Lịch sử tạo đơn hàng
         </button>
       </header>
 
-      <div className="flex-grow grid grid-cols-1 md:grid-cols-7 gap-3 h-screen overflow-hidden">
+      <div className="flex-grow grid grid-cols-1 md:grid-cols-7 gap-3 h-full overflow-hidden">
         <div className="md:col-span-4 p-4 bg-white shadow-lg rounded-md overflow-y-auto">
           <h2 className="text-lg font-bold mb-3">Danh sách sản phẩm</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 overflow-y-auto max-h-screen">
             {filteredProducts.map((product) => (
               <button
                 key={product.id}
@@ -214,65 +219,47 @@ const OrderPage: React.FC = () => {
                 <option value="VIP 1">VIP 1</option>
                 <option value="VIP 2">VIP 2</option>
                 <option value="Sân vườn">Sân vườn</option>
+                <option value="Sân vườn">Mang di</option>
               </select>
             </span>
           </h2>
 
-          <ul className="max-h-[420px] overflow-y-auto mb-4 bg-white shadow-lg rounded-lg p-4 flex-grow space-y-2">
+          <ul className="max-h-screen overflow-y-auto mb-4 bg-white shadow-lg rounded-lg p-4 flex-grow space-y-2">
             {cart.length === 0 ? (
-              <li className="text-gray-500 text-center py-4">Giỏ hàng rỗng</li>
+              <li className="text-center text-gray-500">Giỏ hàng trống</li>
             ) : (
-              cart.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex justify-between items-center p-2 border-b border-gray-200 rounded-lg hover:bg-gray-50 transition duration-300"
-                >
-                  <div className="flex items-center space-x-4">
-                    <Image
-                      src={typeof item.image === "string" ? item.image : ""}
-                      alt={item.name}
-                      preview={false}
-                      width={40}
-                      height={40}
-                      className="object-cover rounded-md hidden md:hidden lg:block"
-                    />
-                    <span className="text-md font-semibold text-gray-700 w-[200px] truncate">
-                      {item.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-end space-x-4 text-right text-gray-600">
-                    <span className="font-bold text-gray-800">
-                      {item.price.toLocaleString()} VND x {item.quantity}
-                    </span>
-                    <div className="flex gap-3 ml-4">
-                      <button
-                        onClick={() => handleIncreaseQuantity(item.id)}
-                        className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition duration-200"
-                      >
-                        +
-                      </button>
-                      <button
-                        onClick={() => handleDecreaseQuantity(item.id)}
-                        className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-200"
-                      >
-                        -
-                      </button>
-                      <button
-                        onClick={() => handleRemoveFromCart(item.id)}
-                        className="px-3 py-1 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition duration-200"
-                      >
-                        Xóa
-                      </button>
+              cart.map((item, index) => (
+                <li key={item.id} className="flex justify-between items-center">
+                  <div>
+                    <div>
+                      {index + 1}
+                      <span className="font-bold text-gray-700">
+                        {item.name}
+                      </span>
                     </div>
+                    <div className="text-sm font-semibold text-blue-600">
+                      sl : {item.quantity} x {item.price}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-blue-600">
+                      {(item.price * item.quantity).toLocaleString()} VND
+                    </span>
+                    <button
+                      onClick={() => handleRemoveFromCart(item.id)}
+                      className="ml-2 text-red-600 hover:underline"
+                    >
+                      Xóa
+                    </button>
                   </div>
                 </li>
               ))
             )}
           </ul>
 
-          <div className="flex items-center justify-between py-2 mb-4">
-            <span className="text-xl font-semibold">Tổng cộng: </span>
-            <span className="text-xl font-bold">
+          <div className="flex justify-between items-center mb-4 text-lg">
+            <span className="font-semibold">Tổng cộng:</span>
+            <span className="font-bold text-blue-600">
               {cart
                 .reduce((total, item) => total + item.price * item.quantity, 0)
                 .toLocaleString()}{" "}
@@ -280,28 +267,26 @@ const OrderPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-5 ">
             <button
-              onClick={handleCheckout}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md w-full"
+              onClick={createOrder}
+              className="bg-green-500 text-white py-5 rounded-md w-full hover:bg-green-600 transition duration-200"
             >
-              Thanh toán
+              Tạo đơn hàng COD
+            </button>
+            <button
+              onClick={createOrder}
+              className="bg-green-500 text-white py-5 rounded-md w-full hover:bg-green-600 transition duration-200"
+            >
+              Thanh toán QR
             </button>
           </div>
         </div>
       </div>
 
       {showQRCode && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center gap-4">
-            <QRCodeCanvas value={getQRCodeValue()} size={250} />
-            <button
-              onClick={() => setShowQRCode(false)}
-              className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
-            >
-              Đóng
-            </button>
-          </div>
+        <div className="flex justify-center items-center p-4 bg-white rounded-lg shadow-lg mt-5">
+          <QRCodeCanvas value={getQRCodeValue()} size={256} />
         </div>
       )}
     </section>

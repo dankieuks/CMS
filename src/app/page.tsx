@@ -27,10 +27,6 @@ function useTokenCheck() {
     };
 
     checkToken();
-
-    const interval = setInterval(checkToken, 600000);
-
-    return () => clearInterval(interval);
   }, [auth, router]);
 }
 

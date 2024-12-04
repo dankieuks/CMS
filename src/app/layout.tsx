@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "@/styles/globals.css";
-import { getMessages } from "next-intl/server";
 
 import AppProviders from "@/shared/providers/app.provider";
 

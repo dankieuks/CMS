@@ -13,6 +13,7 @@ import {
 } from "@/shared/hooks/product";
 import { Product } from "@/shared/types/product";
 import { enqueueSnackbar } from "notistack";
+import ProtectedRoute from "@/shared/providers/auth.provider";
 
 const ProductManagement: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -223,121 +224,125 @@ const ProductManagement: React.FC = () => {
   ];
 
   return (
-    <section className="min-h-screen bg-gray-100 p-6 rounded-xl">
-      <div className="bg-white p-6 rounded-xl shadow-md mb-6">
-        <h1 className="text-2xl font-bold mb-6">Product Management</h1>
-        <Button
-          color="primary"
-          variant="filled"
-          onClick={openModal}
-          style={{ marginBottom: "10px" }}
-        >
-          <BsPersonFillAdd
-            style={{
-              fontSize: "22px",
+    <ProtectedRoute requiredRole="ADMIN">
+      <section className="min-h-screen bg-gray-100 p-6 rounded-xl">
+        <div className="bg-white p-6 rounded-xl shadow-md mb-6">
+          <h1 className="text-2xl font-bold mb-6">Product Management</h1>
+          <Button
+            color="primary"
+            variant="filled"
+            onClick={openModal}
+            style={{ marginBottom: "10px" }}
+          >
+            <BsPersonFillAdd
+              style={{
+                fontSize: "22px",
+              }}
+            />
+            Add Product
+          </Button>
+          <Table
+            dataSource={products}
+            columns={columns}
+            rowKey="id"
+            pagination={{
+              pageSize: 20,
             }}
           />
-          Add Product
-        </Button>
-        <Table
-          dataSource={products}
-          columns={columns}
-          rowKey="id"
-          pagination={{
-            pageSize: 20,
-          }}
-        />
-      </div>
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white p-6 rounded-lg shadow-md"
-          >
-            <h2 className="text-xl font-bold mb-4">
-              {currentProduct ? "Edit Product" : "Add Product"}
-            </h2>
-            {formData.image && (
-              <div className="mb-4 flex justify-center">
-                <Image
-                  src={
-                    formData.image instanceof File
-                      ? URL.createObjectURL(formData.image)
-                      : ""
-                  }
-                  alt="Preview"
-                  style={{ width: "128px", height: "128px" }}
-                  className="object-cover rounded-full border-4 border-gray-300"
+        </div>
+        {showModal && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+            <form
+              onSubmit={handleSubmit}
+              className="bg-white p-6 rounded-lg shadow-md"
+            >
+              <h2 className="text-xl font-bold mb-4">
+                {currentProduct ? "Edit Product" : "Add Product"}
+              </h2>
+              {formData.image && (
+                <div className="mb-4 flex justify-center">
+                  <Image
+                    src={
+                      formData.image instanceof File
+                        ? URL.createObjectURL(formData.image)
+                        : ""
+                    }
+                    alt="Preview"
+                    style={{ width: "128px", height: "128px" }}
+                    className="object-cover rounded-full border-4 border-gray-300"
+                  />
+                </div>
+              )}
+              <div className="mb-4">
+                <label className="block text-sm font-medium">
+                  Upload Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full px-3 py-2 border rounded-lg"
                 />
               </div>
-            )}
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Upload Image</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Price</label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border rounded-lg"
-              />
               <div className="mb-4">
-                <label className="block text-sm font-medium">Brand</label>
-                <select
-                  name="brand"
-                  value={formData.brand}
+                <label className="block text-sm font-medium">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   required
                   className="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="">Select a brand</option>
-                  <option value="BrandA">Đồ uống</option>
-                  <option value="BrandB">Đồ Ăn</option>
-                </select>
+                />
               </div>
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-            </div>
-            <div className="flex space-x-4">
-              <Button color="primary" variant="solid" htmlType="submit">
-                Save
-              </Button>
-              <Button color="danger" variant="outlined" onClick={closeModal}>
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-    </section>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Price</label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+                <div className="mb-4">
+                  <label className="block text-sm font-medium">Brand</label>
+                  <select
+                    name="brand"
+                    value={formData.brand}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border rounded-lg"
+                  >
+                    <option value="">Select a brand</option>
+                    <option value="BrandA">Đồ uống</option>
+                    <option value="BrandB">Đồ Ăn</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div className="flex space-x-4">
+                <Button color="primary" variant="solid" htmlType="submit">
+                  Save
+                </Button>
+                <Button color="danger" variant="outlined" onClick={closeModal}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+      </section>
+    </ProtectedRoute>
   );
 };
 

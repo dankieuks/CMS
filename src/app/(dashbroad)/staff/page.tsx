@@ -16,6 +16,7 @@ import {
   useLockUser,
   useUpdateUser,
 } from "@/shared/hooks/user";
+import ProtectedRoute from "@/shared/providers/auth.provider";
 
 const AdminPage: React.FC = () => {
   const [employees, setEmployees] = useState<Employees[]>([]);
@@ -218,106 +219,110 @@ const AdminPage: React.FC = () => {
   ];
 
   return (
-    <section className="min-h-screen bg-gray-100 p-8 rounded-xl">
-      <div className="bg-white p-6 rounded-xl shadow-md mb-6">
-        <h1 className="text-2xl font-bold mb-6">Staff Management</h1>
-        <Button
-          color="primary"
-          variant="filled"
-          onClick={openModal}
-          style={{ marginBottom: "10px" }}
-        >
-          <BsPersonFillAdd style={{ fontSize: "22px" }} />
-          Add Employee
-        </Button>
-        <Table
-          dataSource={employees}
-          columns={columns}
-          rowKey="id"
-          pagination={{
-            pageSize: 7,
-          }}
-        />
-      </div>
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white p-6 rounded-lg shadow-md"
+    <ProtectedRoute requiredRole="ADMIN">
+      <section className="min-h-screen bg-gray-100 p-8 rounded-xl">
+        <div className="bg-white p-6 rounded-xl shadow-md mb-6">
+          <h1 className="text-2xl font-bold mb-6">Staff Management</h1>
+          <Button
+            color="primary"
+            variant="filled"
+            onClick={openModal}
+            style={{ marginBottom: "10px" }}
           >
-            <h2 className="text-xl font-bold mb-4">
-              {currentStaff ? "Edit Employee" : "Add Employee"}
-            </h2>
-            {formData.image && (
-              <div className="mb-4 flex justify-center">
-                <Image
-                  src={
-                    formData.image instanceof File
-                      ? URL.createObjectURL(formData.image)
-                      : ""
-                  }
-                  alt="Preview"
-                  style={{ width: "128px", height: "128px" }}
-                  className="object-cover rounded-full border-4 border-gray-300"
+            <BsPersonFillAdd style={{ fontSize: "22px" }} />
+            Add Employee
+          </Button>
+          <Table
+            dataSource={employees}
+            columns={columns}
+            rowKey="id"
+            pagination={{
+              pageSize: 7,
+            }}
+          />
+        </div>
+        {showModal && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+            <form
+              onSubmit={handleSubmit}
+              className="bg-white p-6 rounded-lg shadow-md"
+            >
+              <h2 className="text-xl font-bold mb-4">
+                {currentStaff ? "Edit Employee" : "Add Employee"}
+              </h2>
+              {formData.image && (
+                <div className="mb-4 flex justify-center">
+                  <Image
+                    src={
+                      formData.image instanceof File
+                        ? URL.createObjectURL(formData.image)
+                        : ""
+                    }
+                    alt="Preview"
+                    style={{ width: "128px", height: "128px" }}
+                    className="object-cover rounded-full border-4 border-gray-300"
+                  />
+                </div>
+              )}
+              <div className="mb-4">
+                <label className="block text-sm font-medium">
+                  Upload Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full px-3 py-2 border rounded-lg"
                 />
               </div>
-            )}
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Upload Image</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
+                />
+              </div>
 
-            <div className="flex space-x-4">
-              <Button color="primary" variant="solid" htmlType="submit">
-                Save
-              </Button>
+              <div className="flex space-x-4">
+                <Button color="primary" variant="solid" htmlType="submit">
+                  Save
+                </Button>
 
-              <Button color="danger" variant="outlined" onClick={closeModal}>
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-    </section>
+                <Button color="danger" variant="outlined" onClick={closeModal}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+      </section>
+    </ProtectedRoute>
   );
 };
 
