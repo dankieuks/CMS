@@ -32,3 +32,17 @@ body.dark {
     text-wrap: balance;
   }
 }
+/* styles.css */
+.custom-menu .ant-menu-item-selected {
+  border-right: 4px solid #1d4ed8; /* Màu và độ rộng thanh dọc */
+  background: #b9c0de; /* Màu nền khi chọn */
+}
+
+.custom-menu .ant-menu-item {
+  transition: all 0.3s ease; /* Hiệu ứng chuyển đổi mượt */
+}
+
+.custom-menu .ant-menu-item:hover {
+  background: #f0f9ff;
+  color: dodgerblue;
+}

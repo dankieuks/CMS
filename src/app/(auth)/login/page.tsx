@@ -36,12 +36,14 @@ const LoginPage = () => {
       <div className=" grid grid-cols-1 lg:grid-cols-4 bg-white p-8 rounded-lg shadow-md">
         <div className="col-span-2 bg-white ">
           <Image src={Logo} alt="Logo" />
-          <h1 className="text-2xl font-bold text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-700 text-center mb-8">
             Welcome to Your Admin Panel
           </h1>
         </div>
         <div className="col-span-2 p-6">
-          <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+          <h2 className="text-2xl font-bold text-gray-700 text-center mb-6">
+            Login
+          </h2>
           <form onSubmit={handleLogin}>
             <div className="mb-4">
               <label
