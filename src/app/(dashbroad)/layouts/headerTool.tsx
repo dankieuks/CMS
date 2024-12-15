@@ -8,8 +8,8 @@ import React from "react";
 
 const HeaderTool = () => {
   return (
-    <div className="max-w-[583px]  opacity-100 border border-white rounded-3xl py-1 px-10 bg-white dark dark:bg-red-300">
-      <div className="flex items-center justify-between gap-4 ">
+    <div className="opacity-100 border border-white rounded-3xl py-1 px-10 !bg-white dark dark:bg-red-300">
+      <div className="hidden md:flex items-center justify-between gap-4 ">
         <DateTime />
         <ThemeSwitch />
         <NotificationSwitch />

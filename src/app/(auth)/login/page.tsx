@@ -24,19 +24,26 @@ const LoginPage = () => {
 
   return (
     <div
-      className="flex items-center justify-center h-screen bg-gray-100 "
+      className="p-8 md:p-0 flex items-center justify-center h-screen bg-gray-100 "
       style={{
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         backgroundImage:
-          "url('https://e0.pxfuel.com/wallpapers/829/919/desktop-wallpaper-for-laptop-moody-dark-blue-purple-sad.jpg')",
+          "url('https://png.pngtree.com/thumb_back/fh260/back_our/20190620/ourmid/pngtree-coffee-shop-poster-background-material-image_155518.jpg')",
       }}
     >
-      <div className=" grid grid-cols-1 lg:grid-cols-4 bg-white p-8 rounded-lg shadow-md">
-        <div className="col-span-2 bg-white ">
+      <div
+        className=" grid grid-cols-1 lg:grid-cols-4 bg-indigo-100 p-2 md:p-8 rounded-3xl shadow-md"
+        style={{
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="col-span-2 bg-transparent">
           <Image src={Logo} alt="Logo" />
-          <h1 className="text-2xl font-bold text-gray-700 text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-700 text-center hidden md:block mb-8">
             Welcome to Your Admin Panel
           </h1>
         </div>
@@ -55,7 +62,7 @@ const LoginPage = () => {
               <input
                 type="email"
                 id="email"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 !text-black"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -84,6 +91,14 @@ const LoginPage = () => {
               Login
             </button>
           </form>
+          <div className="text-center mt-4">
+            <a
+              href="/forgot-password"
+              className="text-indigo-500 underline text-lg font-semibold"
+            >
+              Forgot Password?
+            </a>
+          </div>
         </div>
       </div>
     </div>

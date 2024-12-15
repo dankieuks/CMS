@@ -59,23 +59,19 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center">
-      <Space wrap>
-        <Dropdown menu={menuProps} placement="bottom">
-          <Image
-            src={typeof auth.user?.image === "string" ? auth.user.image : ""}
-            alt="Logo"
-            className="rounded-full cursor-pointer  hover:scale-110 hover:shadow-lg"
-            preview={false}
-            style={{
-              height: "45px",
-              width: "45px",
-              border: "2px solid #e5e5e9",
-            }}
-          />
-        </Dropdown>
-      </Space>
-    </div>
+    <Dropdown menu={menuProps} placement="bottom">
+      <Image
+        src={typeof auth.user?.image === "string" ? auth.user.image : ""}
+        alt="Logo"
+        className="rounded-full cursor-pointer  hover:scale-110 hover:shadow-lg"
+        preview={false}
+        style={{
+          height: "45px",
+          width: "45px",
+          border: "2px solid #e5e5e9",
+        }}
+      />
+    </Dropdown>
   );
 };
 

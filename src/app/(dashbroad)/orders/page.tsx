@@ -4,19 +4,19 @@ import { QRCodeCanvas } from "qrcode.react";
 import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { CartItem, Product } from "@/shared/types/product";
-import { Image } from "antd";
-import axios from "axios"; // Sử dụng axios để gửi dữ liệu lên backend
+import { Image, Modal } from "antd";
+import axios from "axios";
 import { authState } from "@/shared/store/Atoms/auth";
 
 const OrderPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedTable, setSelectedTable] = useState<string>("");
-  const [showQRCode, setShowQRCode] = useState<boolean>(false);
+  const [isQRModalVisible, setIsQRModalVisible] = useState<boolean>(false);
   const [selectedBrand, setSelectedBrand] = useRecoilState(selectedBrandState);
   const [products, setProducts] = useRecoilState(productState);
   const auth = useRecoilValue(authState);
-  // Hàm thêm sản phẩm vào giỏ hàng
+
   const handleAddToCart = (product: Product) => {
     setCart((prevCart) => {
       const existingProductIndex = prevCart.findIndex(
@@ -69,7 +69,6 @@ const OrderPage: React.FC = () => {
       (product) => selectedBrand === "" || product.brand === selectedBrand
     );
 
-  // Hàm tạo đơn hàng và gửi lên backend
   const createOrder = async () => {
     if (cart.length === 0) {
       alert(
@@ -105,7 +104,6 @@ const OrderPage: React.FC = () => {
       setCart([]);
       setSelectedTable("");
       alert("Đơn hàng đã được tạo thành công!");
-      setShowQRCode(true);
     } catch (error) {
       console.error("Error creating order:", error);
       alert("Đã có lỗi xảy ra khi tạo đơn hàng.");
@@ -122,13 +120,83 @@ const OrderPage: React.FC = () => {
     );
     return `Ngân hàng: ${bankName}\nSố tài khoản: ${bankAccount}\nTổng thanh toán: ${totalAmount.toLocaleString()} VND\nBàn: ${selectedTable}`;
   };
+  const handlePayment = async (method: "cash" | "qr" | "postpaid") => {
+    if (cart.length === 0) {
+      alert(
+        "Giỏ hàng hiện đang trống. Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán."
+      );
+      return;
+    }
+    if (!selectedTable) {
+      alert("Vui lòng chọn bàn trước khi thanh toán.");
+      return;
+    }
 
-  const brands = ["Đồ uống", "Đồ ăn"];
+    const orderData = {
+      userId: auth?.user?.id,
+      items: cart.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      totalAmount: cart.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+      ),
+      paymentMethod: method,
+    };
+
+    if (method === "qr") {
+      setIsQRModalVisible(true);
+
+      const isPaid = await verifyPayment(orderData.totalAmount);
+      if (!isPaid) {
+        alert("Thanh toán QR không thành công. Vui lòng thử lại.");
+        setIsQRModalVisible(false);
+        return;
+      }
+    }
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/order/add`,
+        orderData
+      );
+      console.log("Order created:", response.data);
+      setCart([]);
+      setSelectedTable("");
+      alert("Đơn hàng đã được tạo thành công!");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("Đã có lỗi xảy ra khi tạo đơn hàng.");
+    }
+  };
+
+  const verifyPayment = async (amount: number): Promise<boolean> => {
+    try {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const isPaymentSuccessful = confirm(
+            `Xác nhận thanh toán thành công số tiền: ${amount.toLocaleString()} VND?`
+          );
+          resolve(isPaymentSuccessful);
+        }, 30000);
+      });
+    } catch (error) {
+      console.error("Lỗi khi xác minh thanh toán:", error);
+      return false;
+    }
+  };
+
+  const closeQRModal = () => {
+    setIsQRModalVisible(false);
+  };
+
+  const brands = ["BrandA", "BrandB"];
 
   return (
     <section className="bg-gray-100 p-5 rounded-xl flex flex-col">
       <header className="flex justify-between items-center bg-white shadow-lg px-6 py-4 mb-3 rounded-xl">
-        {/* Tabs for product brands */}
         <div className="flex space-x-4">
           <button
             onClick={() => setSelectedBrand("")}
@@ -170,7 +238,7 @@ const OrderPage: React.FC = () => {
         </button>
       </header>
 
-      <div className="flex-grow grid grid-cols-1 md:grid-cols-7 gap-3 h-full overflow-hidden">
+      <div className="flex-grow grid grid-cols-1 md:grid-cols-7 gap-3 h-full overflow-hidden !min-h-[75vh]">
         <div className="md:col-span-4 p-4 bg-white shadow-lg rounded-md overflow-y-auto">
           <h2 className="text-lg font-bold mb-3">Danh sách sản phẩm</h2>
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 overflow-y-auto max-h-screen">
@@ -267,28 +335,38 @@ const OrderPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex gap-5 ">
+          <div className="flex gap-5">
             <button
-              onClick={createOrder}
-              className="bg-green-500 text-white py-5 rounded-md w-full hover:bg-green-600 transition duration-200"
+              onClick={() => handlePayment("cash")}
+              className="bg-blue-500 text-white py-5 rounded-md w-full hover:bg-blue-600 transition duration-200"
             >
-              Tạo đơn hàng COD
+              Tiền mặt
             </button>
             <button
-              onClick={createOrder}
+              onClick={() => handlePayment("qr")}
               className="bg-green-500 text-white py-5 rounded-md w-full hover:bg-green-600 transition duration-200"
             >
               Thanh toán QR
+            </button>
+            <button
+              onClick={() => handlePayment("postpaid")}
+              className="bg-yellow-500 text-white py-5 rounded-md w-full hover:bg-yellow-600 transition duration-200"
+            >
+              Thanh toán sau
             </button>
           </div>
         </div>
       </div>
 
-      {showQRCode && (
-        <div className="flex justify-center items-center p-4 bg-white rounded-lg shadow-lg mt-5">
-          <QRCodeCanvas value={getQRCodeValue()} size={256} />
-        </div>
-      )}
+      <Modal
+        title="Mã QR Thanh Toán"
+        visible={isQRModalVisible}
+        onCancel={closeQRModal}
+        footer={null}
+        centered
+      >
+        <QRCodeCanvas value={getQRCodeValue()} size={256} />
+      </Modal>
     </section>
   );
 };
