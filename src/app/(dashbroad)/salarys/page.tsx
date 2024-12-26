@@ -1,9 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import { Table, Avatar, Tag } from "antd";
+import { Table, Avatar, Tag, Button } from "antd";
 import { Employees } from "@/shared/types/user";
 import { Column } from "@/shared/types/table";
 import ProtectedRoute from "@/shared/providers/auth.provider";
+import * as XLSX from "xlsx";
 
 const EmployeeSalaryTable = () => {
   const [employees, setEmployees] = useState<Employees[]>([
@@ -111,7 +112,23 @@ const EmployeeSalaryTable = () => {
         return "gray";
     }
   };
+  const handleExportExcel = () => {
+    const data = employees.map((employee) => ({
+      Name: employee.name,
+      Email: employee.email,
+      Role: employee.role,
+      "Hours Worked": employee.hoursWorked,
+      "Hourly Rate ($)": employee.hourlyRate,
+      "Salary ($)": calculateSalary(employee.hoursWorked, employee.hourlyRate),
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employee Salaries");
+
+    // Xuất file Excel
+    XLSX.writeFile(workbook, "Employee_Salaries.xlsx");
+  };
   const columns: Column[] = [
     {
       title: "Avatar",
@@ -171,9 +188,18 @@ const EmployeeSalaryTable = () => {
     <ProtectedRoute requiredRole="ADMIN">
       <section className="min-h-screen bg-gray-100 p-8 rounded-xl">
         <div className="bg-white p-6 rounded-xl shadow-md mb-6">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">
-            Employee Salary Table
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">
+              Employee Salary Table
+            </h2>
+            <Button
+              type="primary"
+              onClick={handleExportExcel}
+              className="bg-blue-500 text-white"
+            >
+              Export to Excel
+            </Button>
+          </div>
           <Table
             dataSource={employees.map((employee) => ({
               ...employee,
