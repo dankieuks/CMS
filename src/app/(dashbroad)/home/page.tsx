@@ -13,7 +13,7 @@ import { authState } from "@/shared/store/Atoms/auth";
 import { Button } from "antd";
 import { jwtDecode } from "jwt-decode";
 import { useGetOrder } from "@/shared/hooks/order";
-
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 const Page = () => {
   const { getProduct } = useGetProduct();
   const [products, setProducts] = useRecoilState(productState);
@@ -41,7 +41,13 @@ const Page = () => {
     { id: 3, name: "Bathroom Essentials", popularity: 18, sales: "1.8%" },
     { id: 4, name: "Apple Smartwatches", popularity: 25, sales: "25%" },
   ];
-
+  const salesData = [
+    { name: "Home Decor", value: 45 },
+    { name: "Disney Bag", value: 29 },
+    { name: "Bathroom Essentials", value: 18 },
+    { name: "Smartwatches", value: 25 },
+  ];
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
   interface DecodedToken {
     exp: number;
     iat?: number;
@@ -142,7 +148,6 @@ const Page = () => {
           ))}
         </div>
       </div>
-
       {/* Top Products */}
       <div className="col-span-1 bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-5">Top Products</h2>
@@ -180,8 +185,24 @@ const Page = () => {
           </tbody>
         </table>
       </div>
-
-      {/* Orders */}
+      <PieChart width={600} height={400}>
+        <Pie
+          data={salesData}
+          cx="50%"
+          cy="50%"
+          outerRadius={160}
+          fill="#8884d8"
+          dataKey="value"
+          nameKey="name"
+        >
+          {salesData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend layout="horizontal" align="center" verticalAlign="bottom" />
+      </PieChart>
+      ;{/* Orders */}
       <div className="col-span-1 lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-5">Orders</h2>
         <table className="w-full table-auto text-sm">
@@ -207,7 +228,6 @@ const Page = () => {
           </tbody>
         </table>
       </div>
-
       {/* Buttons */}
       <div className="col-span-1 flex flex-wrap gap-4 justify-center">
         <Button onClick={handleCheckToken}>Check Token</Button>

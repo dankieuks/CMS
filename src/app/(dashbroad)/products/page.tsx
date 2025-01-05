@@ -265,7 +265,7 @@ const ProductManagement: React.FC = () => {
                     src={
                       formData.image instanceof File
                         ? URL.createObjectURL(formData.image)
-                        : ""
+                        : formData.image
                     }
                     alt="Preview"
                     style={{ width: "128px", height: "128px" }}

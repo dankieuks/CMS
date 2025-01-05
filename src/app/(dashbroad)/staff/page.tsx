@@ -7,7 +7,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { DeleteOutlined, ImportOutlined } from "@ant-design/icons";
 import { Employees } from "@/shared/types/user";
-import { Button, Image, message, Table } from "antd";
+import { Button, Image, message, Table, Modal } from "antd";
 import { Column } from "@/shared/types/table";
 import {
   useAddUser,
@@ -109,7 +109,6 @@ const AdminPage: React.FC = () => {
   const handleDelete = async (id: string) => {
     try {
       await deleteUser(id);
-
       setEmployees((prev) => prev.filter((user) => user.id !== id));
       message.success("Successfully deleted.");
     } catch (error) {
@@ -143,7 +142,7 @@ const AdminPage: React.FC = () => {
             }
             alt="Employee Image"
             style={{ width: "48px", height: "48px" }}
-            className="rounded-lg"
+            className="rounded-full border-2 border-gray-300"
           />
         </div>
       ),
@@ -173,12 +172,13 @@ const AdminPage: React.FC = () => {
       key: "isLocked",
       align: "center",
       render: (text, record) => (
-        <Button onClick={() => handLockUser(record.id)}>
-          {record.isLocked ? (
-            <BsFillLockFill className="text-red-600" />
-          ) : (
-            <BsFillUnlockFill className="text-blue-600" />
-          )}
+        <Button
+          onClick={() => handLockUser(record.id)}
+          className={`${
+            record.isLocked ? "bg-red-600" : "bg-blue-600"
+          } text-white rounded-lg hover:bg-opacity-80 transition-all`}
+        >
+          {record.isLocked ? <BsFillLockFill /> : <BsFillUnlockFill />}
         </Button>
       ),
     },
@@ -202,6 +202,7 @@ const AdminPage: React.FC = () => {
               });
               openModal();
             }}
+            className="mr-2"
           >
             <ImportOutlined style={{ fontSize: "22px" }} />
           </Button>
@@ -210,6 +211,7 @@ const AdminPage: React.FC = () => {
             color="danger"
             variant="text"
             onClick={() => handleDelete(record.id)}
+            className="mr-2"
           >
             <DeleteOutlined style={{ color: "red", fontSize: "22px" }} />
           </Button>
@@ -220,16 +222,18 @@ const AdminPage: React.FC = () => {
 
   return (
     <ProtectedRoute requiredRole="ADMIN">
-      <section className="min-h-screen bg-gray-100 p-8 rounded-xl">
-        <div className="bg-white p-6 rounded-xl shadow-md mb-6">
-          <h1 className="text-2xl font-bold mb-6">Staff Management</h1>
+      <section className="min-h-screen bg-gray-50 p-8 rounded-xl">
+        <div className="bg-white p-6 rounded-xl shadow-lg mb-6">
+          <h1 className="text-2xl font-bold mb-6 text-gray-800">
+            Staff Management
+          </h1>
           <Button
             color="primary"
             variant="filled"
             onClick={openModal}
-            style={{ marginBottom: "10px" }}
+            className="mb-6  transition-all"
           >
-            <BsPersonFillAdd style={{ fontSize: "22px" }} />
+            <BsPersonFillAdd className="mr-2" style={{ fontSize: "22px" }} />
             Add Employee
           </Button>
           <Table
@@ -238,89 +242,87 @@ const AdminPage: React.FC = () => {
             rowKey="id"
             pagination={{
               pageSize: 7,
+              position: ["bottomCenter"],
             }}
           />
         </div>
-        {showModal && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-            <form
-              onSubmit={handleSubmit}
-              className="bg-white p-6 rounded-lg shadow-md"
-            >
-              <h2 className="text-xl font-bold mb-4">
-                {currentStaff ? "Edit Employee" : "Add Employee"}
-              </h2>
-              {formData.image && (
-                <div className="mb-4 flex justify-center">
-                  <Image
-                    src={
-                      formData.image instanceof File
-                        ? URL.createObjectURL(formData.image)
-                        : ""
-                    }
-                    alt="Preview"
-                    style={{ width: "128px", height: "128px" }}
-                    className="object-cover rounded-full border-4 border-gray-300"
-                  />
-                </div>
-              )}
-              <div className="mb-4">
-                <label className="block text-sm font-medium">
-                  Upload Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="w-full px-3 py-2 border rounded-lg"
+        <Modal
+          title={currentStaff ? "Edit Employee" : "Add Employee"}
+          visible={showModal}
+          onCancel={closeModal}
+          footer={null}
+          destroyOnClose
+        >
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {formData.image && (
+              <div className="mb-4 flex justify-center">
+                <Image
+                  src={
+                    formData.image instanceof File
+                      ? URL.createObjectURL(formData.image)
+                      : formData.image
+                  }
+                  alt="Preview"
+                  style={{ width: "128px", height: "128px" }}
+                  className="object-cover rounded-full border-4 border-gray-300"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-
-              <div className="flex space-x-4">
-                <Button color="primary" variant="solid" htmlType="submit">
-                  Save
-                </Button>
-
-                <Button color="danger" variant="outlined" onClick={closeModal}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
+            )}
+            <div>
+              <label className="block text-sm font-medium">Upload Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+            <div className="flex justify-between mt-4">
+              <Button
+                onClick={closeModal}
+                className="bg-gray-400 hover:bg-gray-500 text-white"
+              >
+                Cancel
+              </Button>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                Submit
+              </Button>
+            </div>
+          </form>
+        </Modal>
       </section>
     </ProtectedRoute>
   );

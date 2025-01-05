@@ -1,12 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { QRCodeCanvas } from "qrcode.react";
-import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
+import React, { useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { CartItem, Product } from "@/shared/types/product";
 import { Image, Modal } from "antd";
 import axios from "axios";
 import { authState } from "@/shared/store/Atoms/auth";
+import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
 
 const OrderPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -16,7 +15,9 @@ const OrderPage: React.FC = () => {
   const [selectedBrand, setSelectedBrand] = useRecoilState(selectedBrandState);
   const [products, setProducts] = useRecoilState(productState);
   const auth = useRecoilValue(authState);
+  const intervalIdRef = useRef<number | null>(null);
 
+  const [orderId, setOrderId] = useState<string>("");
   const handleAddToCart = (product: Product) => {
     setCart((prevCart) => {
       const existingProductIndex = prevCart.findIndex(
@@ -65,134 +66,121 @@ const OrderPage: React.FC = () => {
     .filter((product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    .filter(
-      (product) => selectedBrand === "" || product.brand === selectedBrand
+    .filter((product) =>
+      selectedBrand ? product.brand === selectedBrand : true
     );
 
-  const createOrder = async () => {
-    if (cart.length === 0) {
-      alert(
-        "Giỏ hàng hiện đang trống. Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán."
-      );
-      return;
+  const closeQRModal = () => {
+    setIsQRModalVisible(false);
+    if (intervalIdRef.current) {
+      clearInterval(intervalIdRef.current);
+      intervalIdRef.current = null;
     }
-    if (!selectedTable) {
-      alert("Vui lòng chọn bàn trước khi thanh toán.");
-      return;
-    }
+  };
+  const totalAmount = cart.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
-    const orderData = {
-      userId: auth?.user?.id,
+  const MY_BANK = {
+    BANK_ID: "BIDV",
+    ACCOUNT_NO: "4505046869",
+    ACCOUNT_NAME: "KIEU DINH DAN",
+  };
+  useEffect(() => {
+    const random = Math.floor(Math.random() * 1000000);
+    setOrderId(`CMS${random}`);
+  }, []);
 
-      items: cart.map((item) => ({
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      totalAmount: cart.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0
-      ),
-    };
+  const createVietQR = (totalAmount: number) => {
+    return `https://img.vietqr.io/image/${MY_BANK.BANK_ID}-${
+      MY_BANK.ACCOUNT_NO
+    }-print.png?amount=${totalAmount.toString()}&addInfo=${orderId}&accountName=${
+      MY_BANK.ACCOUNT_NAME
+    }`;
+  };
 
+  const checkPaid = async (totalAmount: number): Promise<boolean> => {
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/order/add`,
-        orderData
+      const response = await axios.get(
+        "https://script.google.com/macros/s/AKfycbwhxRhx0FUL4AabonwU-Wyck1nnOoQ1PGw35pNrrMajRbwT-40HdCDFZMWcsvDB8B7Y/exec"
       );
-      console.log("Order created:", response.data);
-      setCart([]);
-      setSelectedTable("");
-      alert("Đơn hàng đã được tạo thành công!");
-    } catch (error) {
-      console.error("Error creating order:", error);
-      alert("Đã có lỗi xảy ra khi tạo đơn hàng.");
-    }
-  };
+      const lastTransaction = response.data.data[response.data.data.length - 1];
 
-  const bankName = "Ngân hàng BIDV";
-  const bankAccount = "4505046869";
+      const pricePaid = lastTransaction["Giá trị"];
+      let contentPaid = lastTransaction["Mô tả"];
 
-  const getQRCodeValue = () => {
-    const totalAmount = cart.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    );
-    return `Ngân hàng: ${bankName}\nSố tài khoản: ${bankAccount}\nTổng thanh toán: ${totalAmount.toLocaleString()} VND\nBàn: ${selectedTable}`;
-  };
-  const handlePayment = async (method: "cash" | "qr" | "postpaid") => {
-    if (cart.length === 0) {
-      alert(
-        "Giỏ hàng hiện đang trống. Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán."
-      );
-      return;
-    }
-    if (!selectedTable) {
-      alert("Vui lòng chọn bàn trước khi thanh toán.");
-      return;
-    }
+      contentPaid = contentPaid?.trim();
 
-    const orderData = {
-      userId: auth?.user?.id,
-      items: cart.map((item) => ({
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      totalAmount: cart.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0
-      ),
-      paymentMethod: method,
-    };
+      const match = contentPaid?.match(/CMS\d+/);
+      const matchedOrderId = match?.[0]?.trim();
 
-    if (method === "qr") {
-      setIsQRModalVisible(true);
-
-      const isPaid = await verifyPayment(orderData.totalAmount);
-      if (!isPaid) {
-        alert("Thanh toán QR không thành công. Vui lòng thử lại.");
-        setIsQRModalVisible(false);
-        return;
+      if (pricePaid === totalAmount && matchedOrderId === orderId) {
+        alert("Thanh toán thành công");
+        return true;
       }
-    }
 
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/order/add`,
-        orderData
-      );
-      console.log("Order created:", response.data);
-      setCart([]);
-      setSelectedTable("");
-      alert("Đơn hàng đã được tạo thành công!");
+      return false;
     } catch (error) {
-      console.error("Error creating order:", error);
-      alert("Đã có lỗi xảy ra khi tạo đơn hàng.");
-    }
-  };
-
-  const verifyPayment = async (amount: number): Promise<boolean> => {
-    try {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const isPaymentSuccessful = confirm(
-            `Xác nhận thanh toán thành công số tiền: ${amount.toLocaleString()} VND?`
-          );
-          resolve(isPaymentSuccessful);
-        }, 30000);
-      });
-    } catch (error) {
-      console.error("Lỗi khi xác minh thanh toán:", error);
+      alert("Lỗi khi thanh toán");
       return false;
     }
   };
 
-  const closeQRModal = () => {
-    setIsQRModalVisible(false);
+  const createOrder = async (orderData: any) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/order/add`,
+        orderData
+      );
+      console.log("Order created:", response.data);
+      setCart([]);
+      setSelectedTable("");
+      alert("Đơn hàng đã được tạo thành công!");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("Đã có lỗi xảy ra khi tạo đơn hàng.");
+    }
   };
 
-  const brands = ["BrandA", "BrandB"];
+  const handlePayment = async (method: "cash" | "qr") => {
+    if (cart.length === 0) {
+      alert("Giỏ hàng hiện đang trống. Vui lòng thêm sản phẩm vào giỏ hàng.");
+      return;
+    }
+    if (!selectedTable) {
+      alert("Vui lòng chọn bàn trước khi thanh toán.");
+      return;
+    }
+
+    const orderData = {
+      userId: auth?.user?.id,
+      items: cart.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      totalAmount,
+      paymentMethod: method,
+    };
+
+    if (method === "cash") {
+      createOrder(orderData);
+    }
+
+    if (method === "qr") {
+      setIsQRModalVisible(true);
+
+      intervalIdRef.current = window.setInterval(async () => {
+        const isPaid = await checkPaid(totalAmount);
+
+        if (isPaid) {
+          createOrder(orderData);
+          closeQRModal();
+        }
+      }, 2000);
+    }
+  };
 
   return (
     <section className="bg-gray-100 p-5 rounded-xl flex flex-col">
@@ -208,7 +196,7 @@ const OrderPage: React.FC = () => {
           >
             Tất cả
           </button>
-          {brands.map((brand) => (
+          {["BrandA", "BrandB"].map((brand) => (
             <button
               key={brand}
               onClick={() => setSelectedBrand(brand)}
@@ -239,6 +227,7 @@ const OrderPage: React.FC = () => {
       </header>
 
       <div className="flex-grow grid grid-cols-1 md:grid-cols-7 gap-3 h-full overflow-hidden !min-h-[75vh]">
+        {/* Product List */}
         <div className="md:col-span-4 p-4 bg-white shadow-lg rounded-md overflow-y-auto">
           <h2 className="text-lg font-bold mb-3">Danh sách sản phẩm</h2>
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 overflow-y-auto max-h-screen">
@@ -246,7 +235,7 @@ const OrderPage: React.FC = () => {
               <button
                 key={product.id}
                 onClick={() => handleAddToCart(product)}
-                className="flex flex-col items-center  border rounded-lg bg-gray-50 shadow hover:shadow-lg transition duration-300 ease-in-out h-44 w-[100%]"
+                className="flex flex-col items-center border rounded-lg bg-gray-50 shadow hover:shadow-lg transition duration-300 ease-in-out h-44 w-[100%]"
               >
                 <Image
                   src={
@@ -256,16 +245,13 @@ const OrderPage: React.FC = () => {
                   }
                   preview={false}
                   alt={product.name}
-                  className=" object-cover rounded-md mb-1"
-                  style={{
-                    width: "100%",
-                    height: "90px",
-                  }}
+                  className="object-cover rounded-md mb-1"
+                  style={{ width: "100%", height: "90px" }}
                 />
                 <span className="text-center h-[45px] font-semibold text-gray-700 w-full truncate-2-lines overflow-hidden text-ellipsis line-clamp-2">
                   {product.name}
                 </span>
-                <span className="text-center font-bold text-blue-600 ">
+                <span className="text-center font-bold text-blue-600">
                   {product.price.toLocaleString()} VND
                 </span>
               </button>
@@ -273,6 +259,7 @@ const OrderPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Cart */}
         <div className="md:col-span-3 p-4 bg-white shadow-lg rounded-md h-full flex flex-col">
           <h2 className="text-lg font-bold mb-4">
             Giỏ hàng -{" "}
@@ -287,7 +274,7 @@ const OrderPage: React.FC = () => {
                 <option value="VIP 1">VIP 1</option>
                 <option value="VIP 2">VIP 2</option>
                 <option value="Sân vườn">Sân vườn</option>
-                <option value="Sân vườn">Mang di</option>
+                <option value="Mang di">Mang đi</option>
               </select>
             </span>
           </h2>
@@ -297,16 +284,33 @@ const OrderPage: React.FC = () => {
               <li className="text-center text-gray-500">Giỏ hàng trống</li>
             ) : (
               cart.map((item, index) => (
-                <li key={item.id} className="flex justify-between items-center">
+                <li
+                  key={item.id}
+                  className="flex justify-between items-center "
+                >
                   <div>
                     <div>
-                      {index + 1}
+                      {index + 1}{" "}
                       <span className="font-bold text-gray-700">
                         {item.name}
                       </span>
                     </div>
-                    <div className="text-sm font-semibold text-blue-600">
-                      sl : {item.quantity} x {item.price}
+                    <div className=" flex text-sm font-semibold text-blue-600 ">
+                      <p> SL :</p>
+                      <button
+                        onClick={() => handleDecreaseQuantity(item.id)}
+                        className="mx-7 bg-green-400 px-2 rounded-md text-gray-500 hover:underline"
+                      >
+                        -
+                      </button>
+                      {item.quantity}
+                      <button
+                        onClick={() => handleIncreaseQuantity(item.id)}
+                        className="mx-7 bg-green-400 px-2 rounded-md text-gray-500 hover:underline"
+                      >
+                        +
+                      </button>{" "}
+                      x {item.price}
                     </div>
                   </div>
                   <div>
@@ -348,24 +352,18 @@ const OrderPage: React.FC = () => {
             >
               Thanh toán QR
             </button>
-            <button
-              onClick={() => handlePayment("postpaid")}
-              className="bg-yellow-500 text-white py-5 rounded-md w-full hover:bg-yellow-600 transition duration-200"
-            >
-              Thanh toán sau
-            </button>
           </div>
         </div>
       </div>
 
       <Modal
-        title="Mã QR Thanh Toán"
-        visible={isQRModalVisible}
+        title="Thanh toán bằng QR-CODE"
+        open={isQRModalVisible}
         onCancel={closeQRModal}
         footer={null}
-        centered
+        width={500}
       >
-        <QRCodeCanvas value={getQRCodeValue()} size={256} />
+        <Image src={createVietQR(totalAmount)} preview={true} />
       </Modal>
     </section>
   );
