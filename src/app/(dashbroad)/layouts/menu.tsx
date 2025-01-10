@@ -7,9 +7,9 @@ import {
   UserOutlined,
   TagOutlined,
   WalletOutlined,
-  OrderedListOutlined, // Icon cho 'Orders'
-  AppstoreAddOutlined, // Icon cho 'Products'
-  TeamOutlined, // Icon cho 'Staff'
+  OrderedListOutlined,
+  AppstoreAddOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 
@@ -22,12 +22,12 @@ const items: MenuProps["items"] = [
       {
         key: "1",
         label: <Link href="/home">Home</Link>,
-        icon: <AppstoreOutlined />, // Icon cho Home
+        icon: <AppstoreOutlined />,
       },
       {
         key: "2",
         label: <Link href="/staff">Staff</Link>,
-        icon: <TeamOutlined />, // Icon cho Staff
+        icon: <TeamOutlined />,
       },
     ],
   },
@@ -39,18 +39,18 @@ const items: MenuProps["items"] = [
       {
         key: "3",
         label: <Link href="/products">Products</Link>,
-        icon: <AppstoreAddOutlined />, // Icon cho Products
+        icon: <AppstoreAddOutlined />,
       },
       {
         key: "4",
         label: <Link href="/orders">Orders</Link>,
-        icon: <OrderedListOutlined />, // Icon cho Orders
+        icon: <OrderedListOutlined />,
       },
 
       {
         key: "5",
         label: <Link href="/promotions">Promotions</Link>,
-        icon: <TagOutlined />, // Icon cho Promotions
+        icon: <TagOutlined />,
       },
     ],
   },
@@ -62,17 +62,17 @@ const items: MenuProps["items"] = [
       {
         key: "6",
         label: <Link href="/reports">Reports</Link>,
-        icon: <DollarOutlined />, // Icon cho Reports
+        icon: <DollarOutlined />,
       },
       {
         key: "7",
         label: <Link href="/salarys">Salaries</Link>,
-        icon: <DollarOutlined />, // Icon cho Salaries
+        icon: <DollarOutlined />,
       },
       {
         key: "8",
         label: <Link href="/financial-reports">Financial Reports</Link>,
-        icon: <WalletOutlined />, // Icon cho Financial Reports
+        icon: <WalletOutlined />,
       },
     ],
   },
@@ -92,15 +92,16 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onMenuClick }) => {
     <Menu
       onClick={onClick}
       mode="inline"
+      defaultOpenKeys={["sub1", "sub2", "sub3"]}
+      defaultSelectedKeys={["1"]}
       items={items}
       style={{
         minHeight: "100%",
         borderRight: 0,
         backgroundColor: "#e2e8f0",
         overflow: "auto",
-        paddingTop: 24,
       }}
-      className="custom-menu px-3 text-[18px]"
+      className="custom-menu  text-[18px] bg-gradient-to-r from-purple-100 to-blue-200"
     />
   );
 };

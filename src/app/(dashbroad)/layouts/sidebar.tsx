@@ -8,8 +8,11 @@ import {
 } from "@ant-design/icons";
 import SidebarMenu from "./menu";
 import logo from "@public/images/logo.png";
+import supporter from "@public/supporter.svg";
+import zalo from "@public/zalo.svg";
 import Image from "next/image";
 import Profile from "@/components/profile";
+import Link from "next/link";
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -34,23 +37,23 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             top: 0,
             zIndex: 1,
             width: "100%",
-            height: "64px", // Đặt chiều cao cố định
+            height: "74px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "0 16px",
+            padding: "0 36px",
             color: "white",
-            backgroundColor: "blueviolet",
+            backgroundColor: "#97c4ff",
           }}
         >
           <Button
-            icon={<MenuOutlined style={{ fontSize: "30px" }} />}
+            icon={<MenuOutlined style={{ fontSize: "36px" }} />}
             onClick={() => setDrawerVisible(true)}
             type="text"
           />
 
-          <div>
-            <Image src={logo} alt="Logo" width={100} height={50} />
+          <div className="">
+            <Image src={logo} alt="Logo" height={80} />
           </div>
 
           <Profile />
@@ -61,8 +64,6 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             <Image
               src={logo}
               alt="Logo"
-              width={100}
-              height={90}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -72,19 +73,74 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             />
           }
           placement="left"
+          closeIcon={null}
           onClose={() => setDrawerVisible(false)}
           open={drawerVisible}
-          width={270}
-          style={{ backgroundColor: "#e2e8f0" }}
+          width={300}
+          style={{
+            background: "linear-gradient(to right, #f3e8ff, #bfdbfe)",
+            position: "relative",
+          }}
+          styles={{
+            body: {
+              padding: 0,
+            },
+          }}
         >
           <SidebarMenu onMenuClick={() => setDrawerVisible(false)} />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "30px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              textAlign: "center",
+              display: collapsed ? "none" : "block",
+              transition: "display 0.3s ease-in-out",
+            }}
+          >
+            <Image
+              src={supporter}
+              alt="supporter"
+              style={{
+                marginBottom: "16px",
+                width: "320px",
+              }}
+            />
+            <Link
+              href="https://zalo.me/0348216852"
+              target="_blank"
+              className="flex justify-center items-center flex-row !mx-[-25px] gap-4 bg-gray-600 px-2 py-1 rounded-lg"
+            >
+              <Image
+                src={zalo}
+                alt="zalo"
+                width={40}
+                height={30}
+                objectFit="contain"
+              />
+              <span className="text-white font-semibold text-lg  ">
+                Zalo Support
+              </span>
+            </Link>
+          </div>
         </Drawer>
 
-        <Content style={{ padding: "0 16px" }}>
+        <Content
+          style={{
+            padding: "0 0",
+            background: "linear-gradient(to right, #f3e8ff, #bfdbfe)",
+          }}
+        >
           <Breadcrumb style={{ margin: "16px 0" }}>
             <Breadcrumb.Item>{}</Breadcrumb.Item>
           </Breadcrumb>
-          <div style={{ padding: 24, minHeight: 380, background: "#fff" }}>
+          <div
+            style={{
+              minHeight: 380,
+              background: "linear-gradient(to right, #f3e8ff, #bfdbfe)",
+            }}
+          >
             {children}
           </div>
         </Content>
@@ -97,16 +153,16 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <Layout className="!min-h-screen relative ">
+    <Layout className="relative">
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         width={300}
-        className="bg-slate-200 relative"
+        className="bg-slate-200"
         style={{ position: "fixed", height: "100vh" }}
       >
-        <div className="flex items-center justify-center p-4">
+        <div className="flex items-center justify-center p-4 bg-gradient-to-r from-purple-100 to-blue-200">
           <Image src={logo} alt="Logo" />
         </div>
         <Button
@@ -122,10 +178,46 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
           className="absolute top-5 right-[-30px] !text-blue-600"
         />
         <SidebarMenu />
+        <div
+          style={{
+            position: "absolute",
+            bottom: "30px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            textAlign: "center",
+            display: collapsed ? "none" : "block",
+            transition: "display 0.3s ease-in-out",
+          }}
+        >
+          <Image
+            src={supporter}
+            alt="supporter"
+            style={{
+              marginBottom: "16px",
+              width: "320px",
+            }}
+          />
+          <Link
+            href="https://zalo.me/0348216852"
+            target="_blank"
+            className="flex justify-center items-center flex-row !mx-[-25px] gap-4 bg-gray-600 px-2 py-1 rounded-lg"
+          >
+            <Image
+              src={zalo}
+              alt="zalo"
+              width={40}
+              height={30}
+              objectFit="contain"
+            />
+            <span className="text-white font-semibold text-lg  ">
+              Zalo Support
+            </span>
+          </Link>
+        </div>
       </Sider>
       <Layout style={{ marginLeft: collapsed ? 80 : 300 }}>
         <Content
-          className="!bg-transparent p-5"
+          className="!bg-transparent p-5 bg-gradient-to-r from-blue-200 to-purple-300"
           style={{
             height: "100vh",
             overflowY: "auto",

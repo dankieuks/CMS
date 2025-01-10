@@ -186,7 +186,7 @@ const EmployeeSalaryTable = () => {
 
   return (
     <ProtectedRoute requiredRole="ADMIN">
-      <section className="min-h-screen bg-gray-100 p-8 rounded-xl">
+      <section className=" p-6 rounded-xl">
         <div className="bg-white p-6 rounded-xl shadow-md mb-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
@@ -206,9 +206,12 @@ const EmployeeSalaryTable = () => {
               key: employee.id,
             }))}
             columns={columns}
-            pagination={false}
+            pagination={{
+              pageSize: 10,
+              position: ["bottomCenter"],
+            }}
             bordered
-            className="rounded-xl"
+            className="rounded-xl custom-table"
           />
         </div>
       </section>

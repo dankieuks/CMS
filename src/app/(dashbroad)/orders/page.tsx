@@ -6,7 +6,7 @@ import { Image, Modal } from "antd";
 import axios from "axios";
 import { authState } from "@/shared/store/Atoms/auth";
 import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
-
+import { enqueueSnackbar } from "notistack";
 const OrderPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -95,7 +95,7 @@ const OrderPage: React.FC = () => {
   const createVietQR = (totalAmount: number) => {
     return `https://img.vietqr.io/image/${MY_BANK.BANK_ID}-${
       MY_BANK.ACCOUNT_NO
-    }-print.png?amount=${totalAmount.toString()}&addInfo=${orderId}&accountName=${
+    }-compact.png?amount=${totalAmount.toString()}&addInfo=${orderId}&accountName=${
       MY_BANK.ACCOUNT_NAME
     }`;
   };
@@ -116,13 +116,19 @@ const OrderPage: React.FC = () => {
       const matchedOrderId = match?.[0]?.trim();
 
       if (pricePaid === totalAmount && matchedOrderId === orderId) {
-        alert("Thanh toán thành công");
+        enqueueSnackbar("Thanh toán thành công", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
         return true;
       }
 
       return false;
     } catch (error) {
-      alert("Lỗi khi thanh toán");
+      enqueueSnackbar("Xảy ra lỗi khi thanh toán", {
+        variant: "warning",
+        autoHideDuration: 1500,
+      });
       return false;
     }
   };
@@ -134,22 +140,227 @@ const OrderPage: React.FC = () => {
         orderData
       );
       console.log("Order created:", response.data);
+
       setCart([]);
       setSelectedTable("");
-      alert("Đơn hàng đã được tạo thành công!");
+
+      enqueueSnackbar("Tạo đơn hàng thành công", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
+
+      printInvoice(response.data);
     } catch (error) {
-      console.error("Error creating order:", error);
-      alert("Đã có lỗi xảy ra khi tạo đơn hàng.");
+      enqueueSnackbar("Xảy ra lỗi khi tạo đơn, vui lòng tạo lại", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
+    }
+  };
+
+  const printInvoice = (orderData: any) => {
+    const vietnamTime =
+      new Date(orderData.createdAt).toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+      }) || "Không xác định";
+
+    const invoiceHTML = `
+      <html>
+        <head>
+          <title>HÓA ĐƠN BÁN HÀNG</title>
+          <style>
+            body {
+              font-family: 'Courier New', Courier, monospace;
+              margin: 0;
+              padding: 0;
+              background-color: #fff;
+            }
+            .invoice-container {
+              width: 220px;
+              padding: 10px;
+              margin: 0 auto;
+              font-size: 12px;
+              border: 1px solid #000;
+              border-radius: 5px;
+              box-shadow: none;
+            }
+            .invoice-header {
+              text-align: center;
+              font-size: 16px;
+              font-weight: bold;
+              margin-bottom: 20px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            }
+            .invoice-details {
+              margin-top: 10px;
+              display: flex;
+              flex-direction: column;
+            }
+            .invoice-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 5px;
+            }
+            .invoice-table th, .invoice-table td {
+              padding: 3px 5px;
+              border: none;
+              text-align: left;
+            }
+            .invoice-table th {
+              font-weight: bold;
+            }
+            .invoice-table td {
+              font-size: 12px;
+            }
+            .total-amount {
+              text-align: center;
+              margin-top: 20px;
+              font-size: 14px;
+              font-weight: bold;
+            }
+              .info-note{
+              float:left;
+              margin: 10px 0
+              }
+            .note {
+              font-size: 10px;
+              text-align: center;
+              margin-top: 10px;
+            }
+            .item-details {
+              display: flex;
+              align-items: center;
+              flex-direction: row;
+            }
+            .item-details p {
+              margin: 0;
+              font-size: 10px;
+              padding: 0 5px; 
+            }
+            .loading-message {
+              text-align: center;
+              font-size: 16px;
+              color: #333;
+              margin-top: 20px;
+            }
+            .invoice-logo {
+              max-width: 140px; 
+              max-height: 100px;
+              object-fit: contain;
+            }
+            @media print {
+              body {
+                margin: 0;
+                padding: 0;
+                background-color: #fff;
+              }
+              .invoice-container {
+                box-shadow: none;
+                width: 350px;
+                margin: 0;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <!-- Loading message -->
+          <div class="loading-message">Đang in hóa đơn...</div>
+  
+          <div class="invoice-container">
+            <div class="invoice-header ">
+        <span class="company-name">Coffee Management Store</span>
+       <img src="https://firebasestorage.googleapis.com/v0/b/cms-1810c.appspot.com/o/images%2Flogo.png?alt=media&token=9b3b42da-e2a7-4ea5-94b2-76877e83f7cd" alt="CMS Coffee Logo" class="invoice-logo" />
+        <span class="company-name">Hóa đơn bán hàng</span>
+      </div>
+      <hr/>
+            <div class="invoice-details">
+              <table class="invoice-table">
+                <thead>
+                  <tr>
+                    <th>Sản phẩm</th>
+                    <th>Tổng</th>
+                  </tr>
+                </thead>
+               <tbody>
+                ${orderData.items
+                  .map(
+                    (item: any, index: number) => `
+                  <tr>
+                    <td>${item.productName}
+                      <span class="item-details">
+                        <p>SL: ${item.quantity}</p> <p>x</p>
+                        <p>${item.productPrice.toLocaleString()}</p>
+                        <td>${item.total.toLocaleString()} VND</td>
+                      </span>
+                    </td>
+               
+                  </tr>
+                `
+                  )
+                  .join("")}
+              </tbody>
+              </table>
+              <hr/>
+              <div class="total-amount">
+                Tổng cộng: ${orderData.totalAmount.toLocaleString()} VND
+              </div>
+              <div class="info-note">
+                NVBH: ${auth?.user?.name}
+                <br />
+                Thời gian đặt hàng: ${vietnamTime};
+              </div>
+              <div class="note">
+                Cảm ơn bạn đã mua sắm tại cửa hàng của chúng tôi!
+              </div>
+            </div>
+          </div>
+  
+          <script>
+
+            window.onload = function() {
+             
+              setTimeout(function() {
+                document.querySelector('.loading-message').style.display = 'none';
+                window.print();
+              }, 500); 
+            }
+          </script>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "", "width=300,height=600");
+
+    if (printWindow) {
+      printWindow.document.write(invoiceHTML);
+      printWindow.document.close();
+      enqueueSnackbar("In hóa đơn thành công", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
+    } else {
+      enqueueSnackbar("Xảy ra lỗi trong quá trình in hóa đơn", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
     }
   };
 
   const handlePayment = async (method: "cash" | "qr") => {
     if (cart.length === 0) {
-      alert("Giỏ hàng hiện đang trống. Vui lòng thêm sản phẩm vào giỏ hàng.");
+      enqueueSnackbar("Giỏ hàng hiện đang trống.", {
+        variant: "info",
+        autoHideDuration: 1500,
+      });
       return;
     }
     if (!selectedTable) {
-      alert("Vui lòng chọn bàn trước khi thanh toán.");
+      enqueueSnackbar("Vui lòng chọn bàn trước khi thanh toán !", {
+        variant: "info",
+        autoHideDuration: 1500,
+      });
       return;
     }
 
@@ -158,7 +369,6 @@ const OrderPage: React.FC = () => {
       items: cart.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
-        price: item.price,
       })),
       totalAmount,
       paymentMethod: method,
@@ -196,7 +406,7 @@ const OrderPage: React.FC = () => {
           >
             Tất cả
           </button>
-          {["BrandA", "BrandB"].map((brand) => (
+          {["Đồ uống", "Đồ Ăn"].map((brand) => (
             <button
               key={brand}
               onClick={() => setSelectedBrand(brand)}
@@ -363,7 +573,15 @@ const OrderPage: React.FC = () => {
         footer={null}
         width={500}
       >
-        <Image src={createVietQR(totalAmount)} preview={true} />
+        <div className="flex flex-col items-start text-left gap-y-2">
+          <Image src={createVietQR(totalAmount)} preview={true} />
+          <div className="text-lg px-16 font-semibold text-gray-700 mb-2">
+            MÃ ĐƠN HÀNG: {orderId}
+          </div>
+          <div className="text-lg px-16 font-semibold text-gray-700 mb-4">
+            HÓA ĐƠN: {totalAmount.toLocaleString()} VND
+          </div>
+        </div>
       </Modal>
     </section>
   );

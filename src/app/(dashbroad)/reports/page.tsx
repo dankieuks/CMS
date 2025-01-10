@@ -113,7 +113,7 @@ const WorkScheduleCalendar = () => {
   };
 
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
+    <div className=" bg-gray-100 ">
       <div className="bg-white p-6 rounded-xl shadow-md max-w-4xl mx-auto">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
           Lịch làm việc hàng tháng

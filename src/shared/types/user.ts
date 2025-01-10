@@ -5,10 +5,12 @@ export interface Employees {
   password: string;
   image: string | File | null;
   role?: string;
+  bankCode?: number | null;
+  bank?: string;
   lastLogin?: Date | null;
-  createdAt?: Date;
-  updatedAt?: Date;
   isLocked?: boolean;
   hoursWorked?: number;
   hourlyRate?: number;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }

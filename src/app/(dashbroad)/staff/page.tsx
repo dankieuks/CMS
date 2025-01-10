@@ -4,6 +4,7 @@ import {
   BsFillUnlockFill,
   BsFillLockFill,
 } from "react-icons/bs";
+import { FaCheckCircle, FaCommentDots } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
 import { DeleteOutlined, ImportOutlined } from "@ant-design/icons";
 import { Employees } from "@/shared/types/user";
@@ -17,6 +18,8 @@ import {
   useUpdateUser,
 } from "@/shared/hooks/user";
 import ProtectedRoute from "@/shared/providers/auth.provider";
+import Link from "next/link";
+import { enqueueSnackbar } from "notistack";
 
 const AdminPage: React.FC = () => {
   const [employees, setEmployees] = useState<Employees[]>([]);
@@ -75,10 +78,11 @@ const AdminPage: React.FC = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Data before submit:", formData);
-
     if (!currentStaff && !formData.image) {
-      message.error("Image is required for new users.");
+      enqueueSnackbar("Hồ sơ đang thiếu hình ảnh !", {
+        variant: "warning",
+        autoHideDuration: 1500,
+      });
       return;
     }
 
@@ -90,165 +94,145 @@ const AdminPage: React.FC = () => {
           image: formData.image || currentStaff.image,
         };
         await updateUser(updatedUser);
-        message.success("User updated successfully");
+        enqueueSnackbar("Cập nhật hồ sơ thành công !", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
       } else {
         await addUser(formData);
-        message.success("User added successfully");
+        enqueueSnackbar("Thêm nhân viên thành công !", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
       }
 
       await getUsers();
     } catch (error: any) {
       const responseMessage =
         error.response?.message || "An error occurred. Please try again.";
-      message.error(responseMessage);
+      enqueueSnackbar(responseMessage, {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
     }
 
     closeModal();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string | undefined) => {
+    if (!id) {
+      message.error("Invalid ID. Cannot delete.");
+      return;
+    }
+
     try {
       await deleteUser(id);
       setEmployees((prev) => prev.filter((user) => user.id !== id));
-      message.success("Successfully deleted.");
+      enqueueSnackbar("Xóa nhân viên thành công", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
     } catch (error) {
-      message.error("Failed to delete user.");
+      enqueueSnackbar("Xảy ra lỗi khi xóa", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
     }
   };
+
   const handLockUser = async (id: string) => {
     await lockUser(id);
     await getUsers();
   };
 
-  const columns: Column[] = [
-    {
-      title: "STT",
-      dataIndex: "index",
-      key: "index",
-      align: "center",
-      render: (text, record, index: number) => <>{index + 1}</>,
-    },
-    {
-      title: "Image",
-      dataIndex: "image",
-      key: "image",
-      align: "center",
-      render: (text, record) => (
-        <div className="flex justify-center items-center h-full">
-          <Image
-            src={
-              record.image ||
-              "https://png.pngtree.com/png-vector/20190710/ourmid/pngtree-user-vector-avatar-png-image_1541962.jpg"
-            }
-            alt="Employee Image"
-            style={{ width: "48px", height: "48px" }}
-            className="rounded-full border-2 border-gray-300"
-          />
-        </div>
-      ),
-    },
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      align: "center",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-      align: "center",
-      responsive: ["lg"],
-    },
-    {
-      title: "Role",
-      dataIndex: "role",
-      key: "role",
-      align: "center",
-    },
-    {
-      title: "Status",
-      dataIndex: "isLocked",
-      key: "isLocked",
-      align: "center",
-      render: (text, record) => (
-        <Button
-          onClick={() => handLockUser(record.id)}
-          className={`${
-            record.isLocked ? "bg-red-600" : "bg-blue-600"
-          } text-white rounded-lg hover:bg-opacity-80 transition-all`}
-        >
-          {record.isLocked ? <BsFillLockFill /> : <BsFillUnlockFill />}
-        </Button>
-      ),
-    },
-    {
-      title: "Action",
-      dataIndex: "action",
-      key: "action",
-      align: "center",
-      render: (text, record) => (
-        <>
-          <Button
-            color="primary"
-            variant="text"
-            onClick={() => {
-              setCurrentStaff(record);
-              setFormData({
-                name: record.name,
-                email: record.email,
-                password: record.password,
-                image: record.image,
-              });
-              openModal();
-            }}
-            className="mr-2"
-          >
-            <ImportOutlined style={{ fontSize: "22px" }} />
-          </Button>
-
-          <Button
-            color="danger"
-            variant="text"
-            onClick={() => handleDelete(record.id)}
-            className="mr-2"
-          >
-            <DeleteOutlined style={{ color: "red", fontSize: "22px" }} />
-          </Button>
-        </>
-      ),
-    },
-  ];
-
   return (
     <ProtectedRoute requiredRole="ADMIN">
-      <section className="min-h-screen bg-gray-50 p-8 rounded-xl">
-        <div className="bg-white p-6 rounded-xl shadow-lg mb-6">
+      <section className=" p-6 rounded-xl">
+        <div className="bg-gray-50 p-6 rounded-xl shadow-lg mb-6">
           <h1 className="text-2xl font-bold mb-6 text-gray-800">
             Staff Management
           </h1>
-          <Button
-            color="primary"
-            variant="filled"
-            onClick={openModal}
-            className="mb-6  transition-all"
-          >
-            <BsPersonFillAdd className="mr-2" style={{ fontSize: "22px" }} />
-            Add Employee
-          </Button>
-          <Table
-            dataSource={employees}
-            columns={columns}
-            rowKey="id"
-            pagination={{
-              pageSize: 7,
-              position: ["bottomCenter"],
-            }}
-          />
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 justify-center  gap-4 md:gap-x-2  md:gap-y-6 lg:gap-8">
+            <Button
+              color="primary"
+              variant="filled"
+              onClick={openModal}
+              className="w-40 h-56  md:w-50 md:h-50 lg:w-60 lg:h-60 transition-all"
+            >
+              <BsPersonFillAdd className="mr-2" style={{ fontSize: "80px" }} />
+            </Button>
+            {employees.map((employee) => (
+              <div>
+                <div
+                  key={employee.id}
+                  className="relative w-40 h-56 md:w-50 md:h-50 lg:w-60 lg:h-60 bg-slate-300 flex flex-col items-center justify-center gap-2 text-center rounded-lg overflow-hidden shadow-md"
+                >
+                  <Button
+                    className="absolute top-2 right-1 text-red-600 rounded-full z-10 bg-transparent border-none"
+                    onClick={() => {
+                      if (employee.id) {
+                        handleDelete(employee.id);
+                      } else {
+                        console.error("Employee ID is undefined");
+                      }
+                    }}
+                  >
+                    <DeleteOutlined className="text-xl" />
+                  </Button>
+                  <Link href={`/staff/${employee.id}`}>
+                    <Image
+                      src={
+                        employee.image instanceof File
+                          ? URL.createObjectURL(employee.image)
+                          : employee.image || undefined
+                      }
+                      alt="Preview"
+                      style={{ width: "80px", height: "80px" }}
+                      className="object-cover rounded-full border-4 border-indigo-400"
+                    />
+
+                    <div className="flex flex-col items-center">
+                      <span className="text-xl font-bold mb-2">
+                        {employee.name}
+                      </span>
+                      <div>
+                        <span className="text-lg text-gray-600">
+                          Trạng thái:
+                        </span>
+                        <Button
+                          onClick={() => {
+                            if (employee.id) {
+                              handLockUser(employee.id);
+                            } else {
+                              console.error("Employee ID is undefined");
+                            }
+                          }}
+                          className={`${
+                            employee.isLocked ? "bg-red-600" : "bg-green-600"
+                          } text-white rounded-lg hover:bg-opacity-80 transition-all`}
+                        >
+                          {employee.isLocked ? (
+                            <BsFillLockFill />
+                          ) : (
+                            <BsFillUnlockFill />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <Button className="bg-blue-500 mt-3 px-3 py-1 text-sm text-white rounded-md">
+                      Xem chi tiết
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         <Modal
           title={currentStaff ? "Edit Employee" : "Add Employee"}
-          visible={showModal}
+          open={showModal}
           onCancel={closeModal}
           footer={null}
           destroyOnClose
@@ -317,7 +301,10 @@ const AdminPage: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={handleSubmit}
+              >
                 Submit
               </Button>
             </div>

@@ -34,15 +34,20 @@ body.dark {
 }
 /* styles.css */
 .custom-menu .ant-menu-item-selected {
-  border-right: 4px solid #1d4ed8; /* Màu và độ rộng thanh dọc */
-  background: #b9c0de; /* Màu nền khi chọn */
+  border-right: 4px solid #1d4ed8;
+  background: #b9c0de;
 }
 
 .custom-menu .ant-menu-item {
-  transition: all 0.3s ease; /* Hiệu ứng chuyển đổi mượt */
+  transition: all 0.3s ease;
 }
 
 .custom-menu .ant-menu-item:hover {
   background: #f0f9ff;
   color: dodgerblue;
+}
+.custom-table .ant-table-thead > tr > th {
+  background-color: #4b983b;
+  color: white;
+  text-align: center;
 }

@@ -6,17 +6,17 @@ import {
 } from "@ant-design/icons";
 import { Dropdown, Image, MenuProps, message, Space } from "antd";
 import React, { useEffect } from "react";
-import Logo from "@public/images/logo.png";
 import { useLogout } from "@/shared/hooks/auth";
 import { useRecoilValue } from "recoil";
 import { authState } from "@/shared/store/Atoms/auth";
 import { useGetMe } from "@/shared/hooks/user";
+import { useRouter } from "next/navigation";
 
 const Profile: React.FC = () => {
   const { logoutUser } = useLogout();
   const auth = useRecoilValue(authState);
   const { getMeData } = useGetMe();
-
+  const router = useRouter();
   useEffect(() => {
     const loadUserData = async () => {
       await getMeData();
@@ -47,8 +47,8 @@ const Profile: React.FC = () => {
     if (e.key === "3") {
       logoutUser();
       message.success("Successfully logged out.");
-    } else {
-      message.info(`Clicked on ${e.key}`);
+    } else if (e.key === "1") {
+      router.push(`/staff/${auth.user?.id}`);
     }
     console.log("click", e);
   };
@@ -66,8 +66,8 @@ const Profile: React.FC = () => {
         className="rounded-full cursor-pointer  hover:scale-110 hover:shadow-lg"
         preview={false}
         style={{
-          height: "45px",
-          width: "45px",
+          height: "50px",
+          width: "50px",
           border: "2px solid #e5e5e9",
         }}
       />

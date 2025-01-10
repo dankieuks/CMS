@@ -3,6 +3,7 @@ import axios from "axios";
 import { usersState } from "../store/Atoms/user";
 import { Employees } from "@/shared/types/user";
 import { authState } from "../store/Atoms/auth";
+import { enqueueSnackbar } from "notistack";
 
 export const useGetMe = () => {
   const setAuth = useSetRecoilState(authState);
@@ -66,6 +67,34 @@ export const useGetUser = () => {
 
   return { fetchUsers, setUsers };
 };
+export const useGetById = () => {
+  const setUsers = useSetRecoilState(usersState);
+
+  const getUserById = async (id: string): Promise<Employees> => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/user/${id}`
+      );
+
+      const user: Employees = response.data;
+
+      setUsers((prevUsers) => [...prevUsers, user]);
+
+      return user;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching user:", error.message);
+        console.error("Response:", error.response);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+
+      throw error;
+    }
+  };
+
+  return { getUserById };
+};
 
 export const useAddUser = () => {
   const setUsers = useSetRecoilState(usersState);
@@ -91,7 +120,6 @@ export const useAddUser = () => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      console.log(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`);
 
       setUsers((prevUsers) => [...prevUsers, response.data]);
     } catch (error) {
@@ -116,11 +144,14 @@ export const useUpdateUser = () => {
   const updateUser = async (updateUser: Employees) => {
     const formData = new FormData();
 
-    formData.append("name", updateUser.name);
-    formData.append("email", updateUser.email);
-    if (updateUser.password) {
-      formData.append("password", updateUser.password);
-    }
+    if (updateUser.name) formData.append("name", updateUser.name);
+    if (updateUser.email) formData.append("email", updateUser.email);
+    if (updateUser.password) formData.append("password", updateUser.password);
+
+    if (updateUser.bankCode)
+      formData.append("bankCode", String(updateUser.bankCode));
+
+    if (updateUser.bank) formData.append("bank", updateUser.bank);
 
     if (updateUser.image) {
       formData.append("image", updateUser.image);
@@ -134,17 +165,19 @@ export const useUpdateUser = () => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
+
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === updateUser.id ? response.data : user
         )
       );
-      console.log("User updated successfully:", response.data);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Error updating user:", error.message);
-        console.error("Response:", error.response);
+        enqueueSnackbar(error.message, {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
       } else {
         console.error("Unexpected error:", error);
       }
@@ -163,13 +196,15 @@ export const useDelete = () => {
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}`);
 
       setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
+      enqueueSnackbar("Xóa tài khoản thành công", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error deleting user:", error.message);
-        console.error("Response:", error.response);
-      } else {
-        console.error("Unexpected error:", error);
-      }
+      enqueueSnackbar("Xảy ra lỗi khi xóa tài khoản", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
 
       throw error;
     }
@@ -190,12 +225,15 @@ export const useLockUser = () => {
       setUsers((prevUsers) => {
         return prevUsers.map((user) => (user.id === id ? response.data : user));
       });
+      enqueueSnackbar("Cập nhật trạng thái tài khoản thành công", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
     } catch (error: any) {
-      if (error.response) {
-        console.error(error.response.data);
-      } else {
-        console.error("Đã xảy ra lỗi:", error.message);
-      }
+      enqueueSnackbar(error.message, {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
     }
   };
 

@@ -66,7 +66,16 @@ const ProductManagement: React.FC = () => {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    if (name === "price") {
+      const priceValue = Number(value);
+      if (isNaN(priceValue) || priceValue < 0) {
+        return;
+      }
+
+      setFormData({ ...formData, price: priceValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
 
     if (e.target instanceof HTMLInputElement && e.target.type === "file") {
       const file = e.target.files?.[0];
@@ -85,7 +94,10 @@ const ProductManagement: React.FC = () => {
     e.preventDefault();
     console.log("Form Data before submit:", formData);
     if (!currentProduct && !formData.image) {
-      message.error("Image is required for new users.");
+      enqueueSnackbar("Sản phẩm đang thiếu hình ảnh ", {
+        variant: "warning",
+        autoHideDuration: 1500,
+      });
       return;
     }
     try {
@@ -96,13 +108,13 @@ const ProductManagement: React.FC = () => {
           image: image || currentProduct.image,
         };
         await updateProduct(updatedProduct);
-        enqueueSnackbar("Add product successful", {
+        enqueueSnackbar("Cập nhật sản phẩm thành công", {
           variant: "success",
           autoHideDuration: 1500,
         });
       } else {
         await addProduct(formData);
-        enqueueSnackbar("Add product successful", {
+        enqueueSnackbar("Thêm sản phẩm thành công ", {
           variant: "success",
           autoHideDuration: 1500,
         });
@@ -118,10 +130,16 @@ const ProductManagement: React.FC = () => {
       setProducts((prevProducts) =>
         prevProducts.filter((product) => product.id !== id)
       );
-      message.success("Successfully deleted.");
+      enqueueSnackbar("Xóa sản phẩm thành công", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
     } catch (error) {
       console.error("Error during form submission:", error);
-      message.error("Failed to save user.");
+      enqueueSnackbar("Xảy ra lỗi khi xóa sản phẩm", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
     } finally {
       closeModal();
     }
@@ -162,10 +180,11 @@ const ProductManagement: React.FC = () => {
       align: "center",
     },
     {
-      title: "Price ($)",
+      title: "Price (VNĐ)",
       dataIndex: "price",
       key: "price",
       align: "center",
+      render: (price) => <span>{price.toLocaleString()}</span>,
     },
     {
       title: "Description",
@@ -225,8 +244,8 @@ const ProductManagement: React.FC = () => {
 
   return (
     <ProtectedRoute requiredRole="ADMIN">
-      <section className="min-h-screen bg-gray-100 p-6 rounded-xl">
-        <div className="bg-white p-6 rounded-xl shadow-md mb-6">
+      <section className=" p-6 rounded-xl">
+        <div className="bg-gray-100 p-6 rounded-xl shadow-md mb-6">
           <h1 className="text-2xl font-bold mb-6">Product Management</h1>
           <Button
             color="primary"
@@ -246,8 +265,10 @@ const ProductManagement: React.FC = () => {
             columns={columns}
             rowKey="id"
             pagination={{
-              pageSize: 20,
+              pageSize: 10,
+              position: ["bottomCenter"],
             }}
+            className="custom-table"
           />
         </div>
         {showModal && (
@@ -302,6 +323,8 @@ const ProductManagement: React.FC = () => {
                   name="price"
                   value={formData.price}
                   onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
                   required
                   className="w-full px-3 py-2 border rounded-lg"
                 />
@@ -315,8 +338,8 @@ const ProductManagement: React.FC = () => {
                     className="w-full px-3 py-2 border rounded-lg"
                   >
                     <option value="">Select a brand</option>
-                    <option value="BrandA">Đồ uống</option>
-                    <option value="BrandB">Đồ Ăn</option>
+                    <option value="Đồ uống">Đồ uống</option>
+                    <option value="Đồ Ăn">Đồ Ăn</option>
                   </select>
                 </div>
               </div>
