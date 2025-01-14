@@ -52,6 +52,7 @@ export const useGetUser = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/user`
       );
+
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -152,7 +153,8 @@ export const useUpdateUser = () => {
       formData.append("bankCode", String(updateUser.bankCode));
 
     if (updateUser.bank) formData.append("bank", updateUser.bank);
-
+    if (updateUser.hourlyRate)
+      formData.append("hourlyRate", String(updateUser.hourlyRate));
     if (updateUser.image) {
       formData.append("image", updateUser.image);
     }

@@ -16,63 +16,53 @@ import Link from "next/link";
 const items: MenuProps["items"] = [
   {
     key: "sub1",
-    label: "Dashboard",
+    label: "Trang chủ",
     icon: <AppstoreOutlined />,
     children: [
       {
         key: "1",
-        label: <Link href="/home">Home</Link>,
+        label: <Link href="/home">Trang chủ</Link>,
         icon: <AppstoreOutlined />,
       },
+
       {
         key: "2",
-        label: <Link href="/staff">Staff</Link>,
-        icon: <TeamOutlined />,
+        label: <Link href="/orders">Tạo đơn hàng</Link>,
+        icon: <OrderedListOutlined />,
       },
     ],
   },
   {
     key: "sub2",
-    label: "Management",
+    label: "Quản lý cửa hàng",
     icon: <SettingOutlined />,
     children: [
       {
         key: "3",
-        label: <Link href="/products">Products</Link>,
-        icon: <AppstoreAddOutlined />,
+        label: <Link href="/staff">Quản lý nhân viên</Link>,
+        icon: <TeamOutlined />,
       },
       {
         key: "4",
-        label: <Link href="/orders">Orders</Link>,
-        icon: <OrderedListOutlined />,
+        label: <Link href="/products">Quản lý sản phẩm</Link>,
+        icon: <AppstoreAddOutlined />,
       },
-
       {
-        key: "5",
-        label: <Link href="/promotions">Promotions</Link>,
-        icon: <TagOutlined />,
+        key: "7",
+        label: <Link href="/salarys">Lương</Link>,
+        icon: <DollarOutlined />,
       },
     ],
   },
   {
     key: "sub3",
-    label: "Reports & Salary",
+    label: "Lịch trình ",
     icon: <DollarOutlined />,
     children: [
       {
         key: "6",
-        label: <Link href="/reports">Reports</Link>,
+        label: <Link href="/workschedules">Lịch làm việc</Link>,
         icon: <DollarOutlined />,
-      },
-      {
-        key: "7",
-        label: <Link href="/salarys">Salaries</Link>,
-        icon: <DollarOutlined />,
-      },
-      {
-        key: "8",
-        label: <Link href="/financial-reports">Financial Reports</Link>,
-        icon: <WalletOutlined />,
       },
     ],
   },

@@ -154,7 +154,7 @@ const ProductManagement: React.FC = () => {
       render: (text: any, record: any, index: number) => <>{index + 1}</>,
     },
     {
-      title: "Image",
+      title: "Hình ảnh",
       dataIndex: "image",
       key: "image",
       align: "center",
@@ -174,20 +174,20 @@ const ProductManagement: React.FC = () => {
       ),
     },
     {
-      title: "Name",
+      title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
       align: "center",
     },
     {
-      title: "Price (VNĐ)",
+      title: "Giá  (VNĐ)",
       dataIndex: "price",
       key: "price",
       align: "center",
       render: (price) => <span>{price.toLocaleString()}</span>,
     },
     {
-      title: "Description",
+      title: "Thông tin",
       dataIndex: "description",
       key: "description",
       align: "center",
@@ -195,7 +195,7 @@ const ProductManagement: React.FC = () => {
     },
 
     {
-      title: "Action",
+      title: "Chức năng",
       dataIndex: "action",
       key: "action",
       align: "center",
@@ -246,19 +246,19 @@ const ProductManagement: React.FC = () => {
     <ProtectedRoute requiredRole="ADMIN">
       <section className=" p-6 rounded-xl">
         <div className="bg-gray-100 p-6 rounded-xl shadow-md mb-6">
-          <h1 className="text-2xl font-bold mb-6">Product Management</h1>
+          <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm</h1>
           <Button
             color="primary"
-            variant="filled"
+            variant="solid"
             onClick={openModal}
-            style={{ marginBottom: "10px" }}
+            style={{ marginBottom: "10px", padding: "10px" }}
           >
             <BsPersonFillAdd
               style={{
-                fontSize: "22px",
+                fontSize: "26px",
               }}
             />
-            Add Product
+            Thêm sản phẩm mới
           </Button>
           <Table
             dataSource={products}
@@ -278,7 +278,7 @@ const ProductManagement: React.FC = () => {
               className="bg-white p-6 rounded-lg shadow-md"
             >
               <h2 className="text-xl font-bold mb-4">
-                {currentProduct ? "Edit Product" : "Add Product"}
+                {currentProduct ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
               </h2>
               {formData.image && (
                 <div className="mb-4 flex justify-center">
@@ -296,7 +296,7 @@ const ProductManagement: React.FC = () => {
               )}
               <div className="mb-4">
                 <label className="block text-sm font-medium">
-                  Upload Image
+                  Tải hình ảnh lên
                 </label>
                 <input
                   type="file"
@@ -306,7 +306,9 @@ const ProductManagement: React.FC = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium">Name</label>
+                <label className="block text-sm font-medium">
+                  Tên sản phẩm
+                </label>
                 <input
                   type="text"
                   name="name"
@@ -317,7 +319,7 @@ const ProductManagement: React.FC = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium">Price</label>
+                <label className="block text-sm font-medium">Giá</label>
                 <input
                   type="number"
                   name="price"
@@ -328,8 +330,10 @@ const ProductManagement: React.FC = () => {
                   required
                   className="w-full px-3 py-2 border rounded-lg"
                 />
-                <div className="mb-4">
-                  <label className="block text-sm font-medium">Brand</label>
+                <div className="my-4 ">
+                  <label className="block text-sm font-medium">
+                    Loại hình sản phẩm
+                  </label>
                   <select
                     name="brand"
                     value={formData.brand}
@@ -337,14 +341,16 @@ const ProductManagement: React.FC = () => {
                     required
                     className="w-full px-3 py-2 border rounded-lg"
                   >
-                    <option value="">Select a brand</option>
+                    <option value="">Chọn loại hình</option>
                     <option value="Đồ uống">Đồ uống</option>
                     <option value="Đồ Ăn">Đồ Ăn</option>
                   </select>
                 </div>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium">Description</label>
+                <label className="block text-sm font-medium">
+                  Thông tin bổ sung
+                </label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -355,10 +361,10 @@ const ProductManagement: React.FC = () => {
               </div>
               <div className="flex space-x-4">
                 <Button color="primary" variant="solid" htmlType="submit">
-                  Save
+                  Lưu
                 </Button>
                 <Button color="danger" variant="outlined" onClick={closeModal}>
-                  Cancel
+                  Hủy
                 </Button>
               </div>
             </form>

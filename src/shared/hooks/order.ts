@@ -1,8 +1,27 @@
 // hooks/order.ts
 import { useState } from "react";
 import axios from "axios";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { authState } from "../store/Atoms/auth";
+import { ordersState } from "../store/Atoms/order";
+
+export const useGetAllOrder = () => {
+  const [orders, setOrders] = useRecoilState(ordersState);
+
+  const getAllOrders = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/order`
+      );
+
+      setOrders(response.data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
+
+  return { orders, setOrders, getAllOrders };
+};
 
 export const useGetOrder = () => {
   const [orders, setOrders] = useState<any[]>([]);

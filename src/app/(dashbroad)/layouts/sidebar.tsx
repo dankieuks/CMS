@@ -120,7 +120,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
                 objectFit="contain"
               />
               <span className="text-white font-semibold text-lg  ">
-                Zalo Support
+                Zalo hỗ trợ
               </span>
             </Link>
           </div>
@@ -210,7 +210,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
               objectFit="contain"
             />
             <span className="text-white font-semibold text-lg  ">
-              Zalo Support
+              Zalo hỗ trợ
             </span>
           </Link>
         </div>

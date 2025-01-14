@@ -7,6 +7,9 @@ import axios from "axios";
 import { authState } from "@/shared/store/Atoms/auth";
 import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
 import { enqueueSnackbar } from "notistack";
+import { useGetAllOrder, useGetOrder } from "@/shared/hooks/order";
+import { ordersState } from "@/shared/store/Atoms/order";
+import Link from "next/link";
 const OrderPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -16,8 +19,14 @@ const OrderPage: React.FC = () => {
   const [products, setProducts] = useRecoilState(productState);
   const auth = useRecoilValue(authState);
   const intervalIdRef = useRef<number | null>(null);
-
   const [orderId, setOrderId] = useState<string>("");
+  const [orders] = useRecoilState(ordersState);
+
+  const { getAllOrders } = useGetAllOrder();
+  const handleOrder = async () => {
+    await getAllOrders();
+  };
+  console.log(orders);
   const handleAddToCart = (product: Product) => {
     setCart((prevCart) => {
       const existingProductIndex = prevCart.findIndex(
@@ -428,12 +437,14 @@ const OrderPage: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button
-          onClick={() => alert("Lịch sử tạo đơn hàng")}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-        >
-          Lịch sử tạo đơn hàng
-        </button>
+        <Link href="/orders/history">
+          <button
+            onClick={handleOrder}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+          >
+            Lịch sử tạo đơn hàng
+          </button>
+        </Link>
       </header>
 
       <div className="flex-grow grid grid-cols-1 md:grid-cols-7 gap-3 h-full overflow-hidden !min-h-[75vh]">

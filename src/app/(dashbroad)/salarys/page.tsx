@@ -1,222 +1,132 @@
 "use client";
-import React, { useState } from "react";
-import { Table, Avatar, Tag, Button } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Input, Spin, Button } from "antd";
 import { Employees } from "@/shared/types/user";
+import { useGetUser } from "@/shared/hooks/user";
+import { useSalaries } from "@/shared/hooks/salary";
 import { Column } from "@/shared/types/table";
-import ProtectedRoute from "@/shared/providers/auth.provider";
+import dayjs from "dayjs";
+import "dayjs/locale/vi";
 import * as XLSX from "xlsx";
+const SalaryComponent: React.FC = () => {
+  const [month, setMonth] = useState("2025-01");
+  const [userIds, setUserIds] = useState<string[]>([]);
+  const [employees, setEmployees] = useState<Employees[]>([]);
+  const { salaries, loading } = useSalaries(month, userIds);
+  const { fetchUsers } = useGetUser();
 
-const EmployeeSalaryTable = () => {
-  const [employees, setEmployees] = useState<Employees[]>([
-    {
-      id: "1",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSILPqTXqLj8vJ9ePsxBrkRz4k0w7IPzOCiPA&s",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      role: "Manager",
-      isLocked: false,
-      hoursWorked: 40,
-      hourlyRate: 15,
-    },
-    {
-      id: "2",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn7ECoI9CfwEAvZERO52n405DF4md6CDwdEg&s",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      role: "Staff",
-      isLocked: false,
-      hoursWorked: 45,
-      hourlyRate: 18,
-    },
-    {
-      id: "3",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRy6ZEdBbDCfV5G5XyM8a9h6EB2K9UhV_i6Tg&s",
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      role: "Staff",
-      isLocked: false,
-      hoursWorked: 38,
-      hourlyRate: 20,
-    },
-    {
-      id: "4",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTowvSz0GQF0f_MXBN4cV-bfkz5b_kLmKfHg&s",
-      name: "Bob Brown",
-      email: "bob.brown@example.com",
-      role: "Manager",
-      isLocked: false,
-      hoursWorked: 50,
-      hourlyRate: 25,
-    },
-    {
-      id: "5",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1xXHUDr7ReU2L_5VeQF9c_W8dGZPkZxxqCQ&s",
-      name: "Charlie Taylor",
-      email: "charlie.taylor@example.com",
-      role: "Intern",
-      isLocked: false,
-      hoursWorked: 20,
-      hourlyRate: 10,
-    },
-    {
-      id: "6",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9IuOqDY5OG9LKoW8qP3PQjmdjHDmTZf6aIA&s",
-      name: "Diana Wilson",
-      email: "diana.wilson@example.com",
-      role: "Staff",
-      isLocked: false,
-      hoursWorked: 42,
-      hourlyRate: 19,
-    },
-    {
-      id: "7",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5y3JXOwUVZc4Ttd4xeBLPxzxgYNuVkM8Aqg&s",
-      name: "Ethan Miller",
-      email: "ethan.miller@example.com",
-      role: "Manager",
-      isLocked: false,
-      hoursWorked: 48,
-      hourlyRate: 22,
-    },
-    {
-      id: "8",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7E4Wi0L4R7zH6j9d5Ryof1J8rxvGZVZtNfQ&s",
-      name: "Fiona Garcia",
-      email: "fiona.garcia@example.com",
-      role: "Staff",
-      isLocked: false,
-      hoursWorked: 36,
-      hourlyRate: 17,
-    },
-  ]);
-
-  const calculateSalary = (hoursWorked: number, hourlyRate: number) => {
-    return hoursWorked * hourlyRate;
+  const getUsers = async () => {
+    const users = await fetchUsers();
+    setEmployees(users);
+    const userIdsFromEmployees = users
+      .map((employee) => employee.id)
+      .filter((id): id is string => id !== undefined);
+    setUserIds(userIdsFromEmployees);
   };
 
-  const roleColor = (role: string) => {
-    switch (role) {
-      case "Manager":
-        return "blue";
-      case "Staff":
-        return "green";
-      default:
-        return "gray";
-    }
+  useEffect(() => {
+    getUsers();
+    dayjs.locale("vi");
+  }, []);
+  const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMonth(e.target.value);
   };
-  const handleExportExcel = () => {
-    const data = employees.map((employee) => ({
-      Name: employee.name,
-      Email: employee.email,
-      Role: employee.role,
-      "Hours Worked": employee.hoursWorked,
-      "Hourly Rate ($)": employee.hourlyRate,
-      "Salary ($)": calculateSalary(employee.hoursWorked, employee.hourlyRate),
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Employee Salaries");
-
-    // Xuất file Excel
-    XLSX.writeFile(workbook, "Employee_Salaries.xlsx");
+  const getEmployeeNameById = (id: string) => {
+    const employee = employees.find((emp) => emp.id === id);
+    return employee ? employee.name : "Tên không có sẵn";
   };
+
   const columns: Column[] = [
     {
-      title: "Avatar",
-      dataIndex: "image",
-      key: "image",
+      title: "STT",
+      dataIndex: "index",
+      key: "index",
       align: "center",
-      render: (text: string) => <Avatar src={text} size="large" />,
-    },
-    {
-      title: "Employee Name",
-      dataIndex: "name",
-      key: "name",
-      align: "center",
-      render: (text: string, record: Employees) => (
-        <div className="flex flex-col items-center">
-          <span className="font-semibold">{text}</span>
-          <span className="text-sm text-gray-500">{record.email}</span>
-        </div>
+      render: (text: any, record: any, index: number) => (
+        <span>{index + 1}</span>
       ),
     },
     {
-      title: "Role",
-      dataIndex: "role",
-      key: "role",
+      title: "Nhân Viên",
+      dataIndex: "userId",
+      key: "userId",
       align: "center",
-      render: (role: string) => <Tag color={roleColor(role)}>{role}</Tag>,
+      render: (userId: string) => <span>{getEmployeeNameById(userId)}</span>,
     },
     {
-      title: "Hours Worked",
-      dataIndex: "hoursWorked",
-      key: "hoursWorked",
+      title: "Số Giờ Làm",
+      dataIndex: "totalHoursWorked",
+      key: "totalHoursWorked",
       align: "center",
-      render: (text: number) => <span className="text-blue-600">{text}h</span>,
+      render: (text: string) => <span>{text}</span>,
     },
     {
-      title: "Hourly Rate ($)",
-      dataIndex: "hourlyRate",
-      key: "hourlyRate",
-      align: "center",
-      render: (text: number) => (
-        <span className="text-green-600 font-semibold">${text}</span>
-      ),
-    },
-    {
-      title: "Salary ($)",
+      title: "Lương(VND)",
+      dataIndex: "salary",
       key: "salary",
       align: "center",
-      render: (text: any, record: Employees) => (
-        <span className="text-red-600 font-bold">
-          ${calculateSalary(record.hoursWorked ?? 0, record.hourlyRate ?? 0)}
-        </span>
+      render: (text: string) => (
+        <span>{parseFloat(text).toLocaleString()}</span>
       ),
+      className: "font-medium text-center text-green-600",
     },
   ];
-
+  const formattedMonth = dayjs(month).format("MMMM YYYY");
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(
+      salaries.map((salary) => ({
+        STT: salaries.indexOf(salary) + 1,
+        "Nhân Viên": getEmployeeNameById(salary.userId),
+        "Số Giờ Làm": salary.totalHoursWorked,
+        "Lương (VND)": parseFloat(salary.salary.toString()).toLocaleString(),
+      }))
+    );
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Lương");
+    XLSX.writeFile(wb, `Danh_Sach_Luong_${formattedMonth}.xlsx`);
+  };
   return (
-    <ProtectedRoute requiredRole="ADMIN">
-      <section className=" p-6 rounded-xl">
-        <div className="bg-white p-6 rounded-xl shadow-md mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">
-              Employee Salary Table
-            </h2>
-            <Button
-              type="primary"
-              onClick={handleExportExcel}
-              className="bg-blue-500 text-white"
-            >
-              Export to Excel
-            </Button>
-          </div>
-          <Table
-            dataSource={employees.map((employee) => ({
-              ...employee,
-              key: employee.id,
-            }))}
-            columns={columns}
-            pagination={{
-              pageSize: 10,
-              position: ["bottomCenter"],
-            }}
-            bordered
-            className="rounded-xl custom-table"
-          />
+    <div className="p-6 m-6 bg-gray-100  rounded-lg">
+      <div className="mb-6 flex flex-row justify-between items-center">
+        <h2 className="text-2xl font-semibold text-gray-800 ">
+          Bảng lương {` ${formattedMonth}`}
+        </h2>
+
+        <Input
+          type="month"
+          value={month}
+          onChange={handleMonthChange}
+          className="p-2 text-lg font-bold border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent w-full sm:w-auto"
+        />
+      </div>
+      <div className="mb-4">
+        <Button
+          type="primary"
+          onClick={exportToExcel}
+          className="bg-blue-600 text-white border-none shadow-md rounded-md p-2"
+        >
+          Xuất file Excel
+        </Button>
+      </div>
+      {loading ? (
+        <div className="text-center">
+          <Spin size="large" />
         </div>
-      </section>
-    </ProtectedRoute>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={salaries}
+          rowKey="userId"
+          loading={loading}
+          pagination={{
+            pageSize: 10,
+            position: ["bottomCenter"],
+          }}
+          className=" custom-table shadow-md rounded-md"
+        />
+      )}
+    </div>
   );
 };
 
-export default EmployeeSalaryTable;
+export default SalaryComponent;

@@ -23,6 +23,7 @@ const StaffDetail = () => {
     role: "staff",
     bankCode: null as number | null,
     bank: "",
+    hourlyRate: 0,
     isLocked: false,
     createdAt: "",
     updatedAt: "",
@@ -45,29 +46,31 @@ const StaffDetail = () => {
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFormData({ ...formData, bank: e.target.value });
   };
+  const fetchUser = async () => {
+    if (id) {
+      const user = await getUserById(id as string);
+      setEmployees(user);
+      setFormData({
+        name: user?.name || "",
+        email: user?.email || "",
+        password: user?.password || "",
+        role: user?.role || "",
+        bankCode: user?.bankCode || null,
+        bank: user?.bank || "",
+        hourlyRate: user?.hourlyRate || 0,
+        isLocked: user?.isLocked || false,
+        createdAt: user?.createdAt
+          ? new Date(user.createdAt).toISOString()
+          : "",
+        updatedAt: user?.updatedAt
+          ? new Date(user.updatedAt).toISOString()
+          : "",
+        image: user?.image || null,
+      });
+    }
+  };
+
   useEffect(() => {
-    const fetchUser = async () => {
-      if (id) {
-        const user = await getUserById(id as string);
-        setEmployees(user);
-        setFormData({
-          name: user?.name || "",
-          email: user?.email || "",
-          password: "",
-          role: user?.role || "",
-          bankCode: user?.bankCode || null,
-          bank: user?.bank || "",
-          isLocked: user?.isLocked || false,
-          createdAt: user?.createdAt
-            ? new Date(user.createdAt).toISOString()
-            : "",
-          updatedAt: user?.updatedAt
-            ? new Date(user.updatedAt).toISOString()
-            : "",
-          image: user?.image || null,
-        });
-      }
-    };
     fetchUser();
   }, [id]);
   console.log("formData", formData);
@@ -90,10 +93,11 @@ const StaffDetail = () => {
       setFormData({
         name: employees?.name || "",
         email: employees?.email || "",
-        password: "",
+        password: employees?.password || "",
         role: employees?.role || "staff",
         bankCode: employees?.bankCode || null,
         bank: employees?.bank || "",
+        hourlyRate: employees?.hourlyRate || 0,
         isLocked: employees?.isLocked || false,
         createdAt: employees?.createdAt
           ? new Date(employees.createdAt).toISOString()
@@ -116,6 +120,7 @@ const StaffDetail = () => {
         };
         await updateUser(updatedUser);
         setEmployees(updatedUser);
+        fetchUser();
         setIsEditing(false);
         enqueueSnackbar("Cập nhật hồ sơ thành công !", {
           variant: "success",
@@ -203,6 +208,19 @@ const StaffDetail = () => {
                 value: formData.bank,
                 isEditable: true,
               },
+
+              {
+                label: "Mức lương /h",
+                name: "hourlyRate",
+                value: formData.hourlyRate,
+                isEditable: true,
+              },
+              {
+                label: "Mật hhẩu",
+                name: "password",
+                value: formData.password,
+                isEditable: true,
+              },
               {
                 label: "Chức vụ",
                 name: "role",
@@ -268,7 +286,7 @@ const StaffDetail = () => {
         {/* Professional Details */}
         <div className="flex-1 bg-gradient-to-r from-blue-50 to-indigo-100 p-6 rounded-lg">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Professional Details
+            Thông tin chuyên môn
           </h2>
           <p className="text-gray-600 mb-4">
             Add more details about the staff's role, achievements, or other

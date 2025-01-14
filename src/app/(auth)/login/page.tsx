@@ -44,12 +44,12 @@ const LoginPage = () => {
         <div className="col-span-2 bg-transparent">
           <Image src={Logo} alt="Logo" />
           <h1 className="text-2xl font-bold text-gray-700 text-center hidden md:block mb-8">
-            Welcome to Your Admin Panel
+            Hệ thống quản lý cửa hàng cà phê
           </h1>
         </div>
         <div className="col-span-2 p-6">
           <h2 className="text-2xl font-bold text-gray-700 text-center mb-6">
-            Login
+            Đăng nhập
           </h2>
           <form onSubmit={handleLogin}>
             <div className="mb-4">
@@ -73,7 +73,7 @@ const LoginPage = () => {
                 htmlFor="password"
                 className="block text-gray-700 font-semibold mb-2"
               >
-                Password
+                Mật khẩu
               </label>
               <input
                 type="password"
@@ -88,7 +88,7 @@ const LoginPage = () => {
               type="submit"
               className="w-full bg-indigo-500 text-white py-3 rounded-lg font-semibold hover:bg-indigo-600 transition duration-300"
             >
-              Login
+              Đăng nhập
             </button>
           </form>
           <div className="text-center mt-4">
@@ -96,7 +96,7 @@ const LoginPage = () => {
               href="/forgot-password"
               className="text-indigo-500 underline text-lg font-semibold"
             >
-              Forgot Password?
+              Quên mật khẩu?
             </a>
           </div>
         </div>

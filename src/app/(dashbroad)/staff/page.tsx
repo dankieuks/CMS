@@ -20,6 +20,8 @@ import {
 import ProtectedRoute from "@/shared/providers/auth.provider";
 import Link from "next/link";
 import { enqueueSnackbar } from "notistack";
+import { useSetRecoilState } from "recoil";
+import { usersState } from "@/shared/store/Atoms/user";
 
 const AdminPage: React.FC = () => {
   const [employees, setEmployees] = useState<Employees[]>([]);
@@ -32,17 +34,18 @@ const AdminPage: React.FC = () => {
     password: "",
     image: null as File | null,
   });
-
+  const setUsers = useSetRecoilState(usersState);
   const { fetchUsers } = useGetUser();
   const { deleteUser } = useDelete();
   const { addUser } = useAddUser();
   const { updateUser } = useUpdateUser();
   const { lockUser } = useLockUser();
+
   const getUsers = async () => {
     const users = await fetchUsers();
     setEmployees(users);
+    setUsers(users);
   };
-
   useEffect(() => {
     getUsers();
   }, []);
@@ -106,7 +109,7 @@ const AdminPage: React.FC = () => {
         });
       }
 
-      await getUsers();
+      await fetchUsers();
     } catch (error: any) {
       const responseMessage =
         error.response?.message || "An error occurred. Please try again.";
@@ -128,21 +131,12 @@ const AdminPage: React.FC = () => {
     try {
       await deleteUser(id);
       setEmployees((prev) => prev.filter((user) => user.id !== id));
-      enqueueSnackbar("Xóa nhân viên thành công", {
-        variant: "success",
-        autoHideDuration: 1500,
-      });
-    } catch (error) {
-      enqueueSnackbar("Xảy ra lỗi khi xóa", {
-        variant: "success",
-        autoHideDuration: 1500,
-      });
-    }
+    } catch (error) {}
   };
 
   const handLockUser = async (id: string) => {
     await lockUser(id);
-    await getUsers();
+    await fetchUsers();
   };
 
   return (
@@ -150,7 +144,7 @@ const AdminPage: React.FC = () => {
       <section className=" p-6 rounded-xl">
         <div className="bg-gray-50 p-6 rounded-xl shadow-lg mb-6">
           <h1 className="text-2xl font-bold mb-6 text-gray-800">
-            Staff Management
+            Quản lý nhân viên
           </h1>
 
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 justify-center  gap-4 md:gap-x-2  md:gap-y-6 lg:gap-8">
@@ -197,7 +191,7 @@ const AdminPage: React.FC = () => {
                         {employee.name}
                       </span>
                       <div>
-                        <span className="text-lg text-gray-600">
+                        <span className="text-lg text-gray-600 mr-2">
                           Trạng thái:
                         </span>
                         <Button
