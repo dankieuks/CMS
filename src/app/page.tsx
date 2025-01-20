@@ -2,41 +2,46 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { isTokenExpired } from "@/shared/utils/tokenExpired";
 import { authState } from "@/shared/store/Atoms/auth";
 import LoadingPage from "@/components/loading";
 
-function useTokenCheck() {
+function useTokenCheck(): boolean {
   const auth = useRecoilValue(authState);
   const router = useRouter();
+  const pathname = usePathname();
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    const checkToken = () => {
-      const token = auth?.accessToken || localStorage.getItem("authToken");
-      if (token) {
-        if (isTokenExpired(token)) {
-          localStorage.removeItem("authToken");
-          router.replace("/login");
-        } else {
-          router.replace("/home");
-        }
-      } else {
+    const guestPaths = ["/login", "/forgot-password", "/reset-password"];
+    const token = auth?.accessToken || localStorage.getItem("authToken");
+
+    const checkToken = async () => {
+      if (pathname === "/") {
+        router.replace("/home");
+        return;
+      }
+
+      if (token && !isTokenExpired(token) && guestPaths.includes(pathname)) {
+        router.push("/home");
+        return;
+      }
+
+      if ((!token || isTokenExpired(token)) && !guestPaths.includes(pathname)) {
+        localStorage.removeItem("authToken");
         router.replace("/login");
       }
     };
 
-    checkToken();
-  }, [auth, router]);
+    checkToken().finally(() => setIsChecking(false));
+  }, [auth, router, pathname]);
+
+  return isChecking;
 }
 
 export default function RootPage({ children }: { children: ReactNode }) {
-  const [loading, setLoading] = useState(true);
-  useTokenCheck();
+  const isChecking = useTokenCheck();
 
-  useEffect(() => {
-    setTimeout(() => setLoading(false), 300);
-  }, []);
-
-  return loading ? <LoadingPage /> : <>{children}</>;
+  return isChecking ? <LoadingPage /> : <>{children}</>;
 }

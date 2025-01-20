@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { CartItem, Product } from "@/shared/types/product";
-import { Image, Modal } from "antd";
+import { Image, Input, Modal } from "antd";
 import axios from "axios";
 import { authState } from "@/shared/store/Atoms/auth";
 import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
@@ -10,6 +10,7 @@ import { enqueueSnackbar } from "notistack";
 import { useGetAllOrder, useGetOrder } from "@/shared/hooks/order";
 import { ordersState } from "@/shared/store/Atoms/order";
 import Link from "next/link";
+import { useGetProduct } from "@/shared/hooks/product";
 const OrderPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -20,13 +21,16 @@ const OrderPage: React.FC = () => {
   const auth = useRecoilValue(authState);
   const intervalIdRef = useRef<number | null>(null);
   const [orderId, setOrderId] = useState<string>("");
-  const [orders] = useRecoilState(ordersState);
 
-  const { getAllOrders } = useGetAllOrder();
-  const handleOrder = async () => {
-    await getAllOrders();
+  const { getProduct } = useGetProduct();
+  const getProducts = async () => {
+    const fetchedProducts = await getProduct();
+    setProducts(fetchedProducts);
   };
-  console.log(orders);
+
+  useEffect(() => {
+    getProducts();
+  }, []);
   const handleAddToCart = (product: Product) => {
     setCart((prevCart) => {
       const existingProductIndex = prevCart.findIndex(
@@ -255,8 +259,8 @@ const OrderPage: React.FC = () => {
               margin-top: 20px;
             }
             .invoice-logo {
-              max-width: 140px; 
-              max-height: 100px;
+              max-width: 180px; 
+              max-height: 120px;
               object-fit: contain;
             }
             @media print {
@@ -267,7 +271,7 @@ const OrderPage: React.FC = () => {
               }
               .invoice-container {
                 box-shadow: none;
-                width: 350px;
+                width: 260px;
                 margin: 0;
               }
             }
@@ -301,7 +305,7 @@ const OrderPage: React.FC = () => {
                       <span class="item-details">
                         <p>SL: ${item.quantity}</p> <p>x</p>
                         <p>${item.productPrice.toLocaleString()}</p>
-                        <td>${item.total.toLocaleString()} VND</td>
+                        <td>${item.total.toLocaleString()}</td>
                       </span>
                     </td>
                
@@ -404,7 +408,7 @@ const OrderPage: React.FC = () => {
   return (
     <section className="bg-gray-100 p-5 rounded-xl flex flex-col">
       <header className="flex justify-between items-center bg-white shadow-lg px-6 py-4 mb-3 rounded-xl">
-        <div className="flex space-x-4">
+        <div className="hidden md:flex space-x-4">
           <button
             onClick={() => setSelectedBrand("")}
             className={`px-4 py-2 rounded-md transition ${
@@ -430,18 +434,15 @@ const OrderPage: React.FC = () => {
           ))}
         </div>
 
-        <input
+        <Input
           type="text"
           placeholder="Tìm kiếm sản phẩm..."
-          className="border p-2 w-1/4 rounded-md focus:ring-2 focus:ring-green-300 outline-none"
+          className="border p-2 w-1/4 rounded-md focus:ring-2 focus:ring-green-400 outline-none"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <Link href="/orders/history">
-          <button
-            onClick={handleOrder}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-          >
+          <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
             Lịch sử tạo đơn hàng
           </button>
         </Link>

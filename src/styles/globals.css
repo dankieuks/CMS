@@ -51,3 +51,6 @@ body.dark {
   color: white;
   text-align: center;
 }
+.ant-layout-sider {
+  transition: width 0.1s ease-in-out;
+}

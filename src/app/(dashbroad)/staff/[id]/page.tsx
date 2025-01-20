@@ -216,7 +216,7 @@ const StaffDetail = () => {
                 isEditable: true,
               },
               {
-                label: "Mật hhẩu",
+                label: "Mật khẩu",
                 name: "password",
                 value: formData.password,
                 isEditable: true,
@@ -292,7 +292,7 @@ const StaffDetail = () => {
             Add more details about the staff's role, achievements, or other
             professional information here.
           </p>
-          <div className="flex items-center space-x-4 justify-center">
+          <div className="flex flex-col md:flex-row items-center space-x-4 justify-center">
             <a
               href="https://www.facebook.com/dankieu.ks"
               target="_blank"

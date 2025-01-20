@@ -121,33 +121,36 @@ const WorkScheduleCalendar = () => {
 
     return (
       <ul className="flex flex-col !text-3xl">
-        <Button
-          type="default"
-          danger
-          disabled={isReadOnly}
-          onClick={() => setIsModalVisible(true)}
-          style={{ float: "right" }}
-        >
-          <BiAddToQueue />
-        </Button>
+        {!isReadOnly && (
+          <Button
+            type="default"
+            danger
+            onClick={() => setIsModalVisible(true)}
+            style={{ float: "right" }}
+          >
+            <BiAddToQueue />
+          </Button>
+        )}
         {daySchedules.map((schedule) => {
           const employee = employees.find((e) => e.id === schedule.userId);
           return (
             <div
               key={schedule.id}
-              className="text-[14px] flex justify-between items-center"
+              className="text-[17px] my-[-5px] flex justify-between items-center"
             >
               <span>
                 {employee?.name} - {schedule.shifts.join(", ")}
               </span>
-              <Button
-                type="link"
-                danger
-                disabled={isReadOnly}
-                onClick={() => handleDeleteSchedule(schedule.id)}
-              >
-                Xóa
-              </Button>
+
+              {!isReadOnly && (
+                <Button
+                  type="link"
+                  danger
+                  onClick={() => handleDeleteSchedule(schedule.id)}
+                >
+                  Xóa
+                </Button>
+              )}
             </div>
           );
         })}
@@ -219,25 +222,32 @@ const WorkScheduleCalendar = () => {
   };
 
   return (
-    <div className="bg-white m-6 p-6 rounded-xl shadow-md  ">
-      <p className="flex flex-row justify-between items-center text-center">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">
+    <div className="bg-white m-6 p-3 md:p-6 rounded-xl shadow-md  ">
+      <div className="flex flex-col md:flex-row  gap-4 justify-between items-center text-center">
+        <h2 className="text-2xl font-bold  text-gray-800">
           Lịch làm việc hàng tháng
         </h2>
-        <span>{isReadOnly ? "Chỉ xem" : "Chỉnh sửa"}</span>
-        <Switch
-          checked={!isReadOnly}
-          onChange={() => setIsReadOnly(!isReadOnly)}
-        />
-        <Button type="primary" onClick={exportToExcel}>
-          Xuất Excel
-        </Button>
-      </p>
+
+        <div className="flex flex-row gap-4">
+          <span>{isReadOnly ? "Chỉ xem" : "Chỉnh sửa"}</span>
+          <Switch
+            checked={!isReadOnly}
+            onChange={() => setIsReadOnly(!isReadOnly)}
+          />
+          <Button
+            type="primary"
+            onClick={exportToExcel}
+            className="p-4 text-lg"
+          >
+            Xuất Excel
+          </Button>
+        </div>
+      </div>
       <Calendar
         cellRender={dateCellRender}
         onSelect={handleDateSelect}
         mode="month"
-        style={{ fontSize: "20px" }}
+        style={{ fontSize: "18px" }}
       />
 
       <Modal

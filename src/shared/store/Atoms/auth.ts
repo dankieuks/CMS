@@ -9,3 +9,7 @@ export const authState = atom<AuthAtomType>({
     accessToken: undefined,
   },
 });
+export const emailAtom = atom<string>({
+  key: "emailState",
+  default: "",
+});

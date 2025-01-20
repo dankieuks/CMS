@@ -122,7 +122,7 @@ const SalaryComponent: React.FC = () => {
             pageSize: 10,
             position: ["bottomCenter"],
           }}
-          className=" custom-table shadow-md rounded-md"
+          className=" custom-table shadow-md rounded-md text-xl"
         />
       )}
     </div>

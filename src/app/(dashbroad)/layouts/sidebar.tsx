@@ -13,6 +13,8 @@ import zalo from "@public/zalo.svg";
 import Image from "next/image";
 import Profile from "@/components/profile";
 import Link from "next/link";
+import { useRecoilValue } from "recoil";
+import { authState } from "@/shared/store/Atoms/auth";
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -20,13 +22,14 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
-
+  const auth = useRecoilValue(authState);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    handleResize(); // Set initial state
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+  const role = auth.user?.role || "STAFF";
 
   if (isMobile) {
     return (
@@ -87,7 +90,10 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             },
           }}
         >
-          <SidebarMenu onMenuClick={() => setDrawerVisible(false)} />
+          <SidebarMenu
+            role={role}
+            onMenuClick={() => setDrawerVisible(false)}
+          />
           <div
             style={{
               position: "absolute",
@@ -110,14 +116,14 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             <Link
               href="https://zalo.me/0348216852"
               target="_blank"
-              className="flex justify-center items-center flex-row !mx-[-25px] gap-4 bg-gray-600 px-2 py-1 rounded-lg"
+              className="flex justify-center items-center flex-row !mx-[-25px] gap-4 bg-gray-600 px-2 py-2 rounded-lg"
             >
               <Image
                 src={zalo}
                 alt="zalo"
                 width={40}
                 height={30}
-                objectFit="contain"
+                style={{ objectFit: "contain" }}
               />
               <span className="text-white font-semibold text-lg  ">
                 Zalo hỗ trợ
@@ -128,13 +134,11 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
 
         <Content
           style={{
-            padding: "0 0",
+            padding: "16px 0",
+
             background: "linear-gradient(to right, #f3e8ff, #bfdbfe)",
           }}
         >
-          <Breadcrumb style={{ margin: "16px 0" }}>
-            <Breadcrumb.Item>{}</Breadcrumb.Item>
-          </Breadcrumb>
           <div
             style={{
               minHeight: 380,
@@ -177,7 +181,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
           onClick={() => setCollapsed(!collapsed)}
           className="absolute top-5 right-[-30px] !text-blue-600"
         />
-        <SidebarMenu />
+        <SidebarMenu role={role} />
         <div
           style={{
             position: "absolute",
@@ -200,14 +204,14 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
           <Link
             href="https://zalo.me/0348216852"
             target="_blank"
-            className="flex justify-center items-center flex-row !mx-[-25px] gap-4 bg-gray-600 px-2 py-1 rounded-lg"
+            className="flex justify-center items-center flex-row !mx-[-25px] gap-4 bg-gray-600 px-2 py-2 rounded-lg"
           >
             <Image
               src={zalo}
               alt="zalo"
               width={40}
               height={30}
-              objectFit="contain"
+              style={{ objectFit: "contain" }}
             />
             <span className="text-white font-semibold text-lg  ">
               Zalo hỗ trợ

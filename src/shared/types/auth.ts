@@ -10,3 +10,7 @@ export type AuthAtomType = {
   remember?: boolean;
   user: Employees | null;
 };
+export interface ResetPasswordResponse {
+  message: string;
+  code: number;
+}

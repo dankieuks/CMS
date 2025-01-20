@@ -13,7 +13,7 @@ const BlogLayout: React.FC<BlogLayoutProps> = ({ children }) => {
     <div>
       <nav>
         <button
-          className="bg-gray-300 text-center w-36 rounded-2xl h-10 relative text-black text-xl font-semibold group"
+          className="hidden md:block bg-gray-300 text-center w-36 rounded-2xl h-10 relative text-black text-xl font-semibold group"
           type="button"
           onClick={() => router.back()}
         >

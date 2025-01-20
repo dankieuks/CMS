@@ -13,7 +13,7 @@ const HeaderTool = () => {
         <ThemeSwitch />
         <NotificationSwitch />
         <Messenger />
-        <LanguageSwitch />
+        {/* <LanguageSwitch /> */}
         <Profile />
       </div>
     </div>
