@@ -26,7 +26,7 @@ const ProductManagement: React.FC = () => {
     price: 0,
     brand: "",
     description: "",
-    image: null as File | null,
+    image: null as string | File | null,
   });
 
   const { getProduct } = useGetProduct();
@@ -56,7 +56,7 @@ const ProductManagement: React.FC = () => {
       price: 0,
       brand: "",
       description: "",
-      image: null,
+      image: null as string | File | null,
     });
   };
 
@@ -75,13 +75,6 @@ const ProductManagement: React.FC = () => {
       setFormData({ ...formData, price: priceValue });
     } else {
       setFormData({ ...formData, [name]: value });
-    }
-
-    if (e.target instanceof HTMLInputElement && e.target.type === "file") {
-      const file = e.target.files?.[0];
-      if (file) {
-        setImage(URL.createObjectURL(file));
-      }
     }
   };
 
@@ -105,7 +98,7 @@ const ProductManagement: React.FC = () => {
         const updatedProduct: Product = {
           ...currentProduct,
           ...formData,
-          image: image || currentProduct.image,
+          image: formData.image || currentProduct.image,
         };
         await updateProduct(updatedProduct);
         enqueueSnackbar("Cập nhật sản phẩm thành công", {

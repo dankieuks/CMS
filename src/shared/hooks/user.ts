@@ -147,7 +147,6 @@ export const useUpdateUser = () => {
 
     if (updateUser.name) formData.append("name", updateUser.name);
     if (updateUser.email) formData.append("email", updateUser.email);
-    if (updateUser.password) formData.append("password", updateUser.password);
 
     if (updateUser.bankCode)
       formData.append("bankCode", String(updateUser.bankCode));

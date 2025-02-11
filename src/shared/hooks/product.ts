@@ -32,12 +32,14 @@ export const useAddProduct = () => {
     const formData = new FormData();
 
     formData.append("name", newProduct.name);
-    formData.append("price", newProduct.price.toString());
+    formData.append("price", String(newProduct.price));
     formData.append("description", newProduct.description);
     formData.append("brand", newProduct.brand);
     if (newProduct.image) {
       formData.append("image", newProduct.image);
     }
+
+    console.log("FormData being sent:", Object.fromEntries(formData.entries()));
 
     try {
       const response = await axios.post(
@@ -47,11 +49,11 @@ export const useAddProduct = () => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      
+
       setProducts((prevProducts) => [...prevProducts, response.data]);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Error adding user:", error.message);
+        console.error("Error adding product:", error.message);
         console.error("Response:", error.response);
       } else {
         console.error("Unexpected error:", error);
@@ -66,15 +68,23 @@ export const useUpdateProduct = () => {
   const setProducts = useSetRecoilState(productState);
 
   const updateProduct = async (updatedProduct: Product) => {
+    const formData = new FormData();
+    formData.append("name", updatedProduct.name);
+    formData.append("price", String(updatedProduct.price));
+    formData.append("description", updatedProduct.description);
+    formData.append("brand", updatedProduct.brand);
+    if (updatedProduct.image) {
+      formData.append("image", updatedProduct.image);
+    }
+
+    console.log(formData);
+
     try {
       const response = await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/product/${updatedProduct.id}`,
+        formData,
         {
-          name: updatedProduct.name,
-          price: updatedProduct.price,
-          description: updatedProduct.description,
-          image: updatedProduct.image,
-          brand: updatedProduct.brand,
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
       setProducts((prevProducts) =>

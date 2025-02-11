@@ -19,7 +19,6 @@ const StaffDetail = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: "",
     role: "staff",
     bankCode: null as number | null,
     bank: "",
@@ -53,7 +52,6 @@ const StaffDetail = () => {
       setFormData({
         name: user?.name || "",
         email: user?.email || "",
-        password: user?.password || "",
         role: user?.role || "",
         bankCode: user?.bankCode || null,
         bank: user?.bank || "",
@@ -93,7 +91,6 @@ const StaffDetail = () => {
       setFormData({
         name: employees?.name || "",
         email: employees?.email || "",
-        password: employees?.password || "",
         role: employees?.role || "staff",
         bankCode: employees?.bankCode || null,
         bank: employees?.bank || "",
@@ -213,12 +210,6 @@ const StaffDetail = () => {
                 label: "Mức lương /h",
                 name: "hourlyRate",
                 value: formData.hourlyRate,
-                isEditable: true,
-              },
-              {
-                label: "Mật khẩu",
-                name: "password",
-                value: formData.password,
                 isEditable: true,
               },
               {

@@ -61,7 +61,7 @@ const Page = () => {
         } else {
           productSales[product.productName] = product.quantity;
         }
-        const employeeId = order.userId; // Hoặc order.sellerId tùy vào hệ thống của bạn
+        const employeeId = order.userId;
         if (employeeSales[employeeId]) {
           employeeSales[employeeId] += product.quantity;
         } else {
@@ -74,7 +74,7 @@ const Page = () => {
     .map(([employeeId, quantity]) => ({ employeeId, quantity }))
     .sort((a, b) => b.quantity - a.quantity);
 
-  const topEmployees = sortedEmployees.slice(0, 5);
+  const topEmployees = sortedEmployees.slice(0, 3);
 
   const sortedProducts = Object.entries(productSales)
     .map(([productName, quantity]) => ({ productName, quantity }))
@@ -90,21 +90,6 @@ const Page = () => {
   ];
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-
-  const handleCheckToken = () => {
-    const token = auth?.accessToken;
-
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        console.log("Token Decoded:", decoded);
-      } catch (error) {
-        console.error("Invalid Token:", error);
-      }
-    } else {
-      console.log("Token not found.");
-    }
-  };
 
   const calculateRevenueForMonth = (orders, month, year) => {
     const startDate = new Date(year, month - 1, 1); // Tháng bắt đầu (month - 1 vì JavaScript bắt đầu từ 0)
@@ -128,29 +113,39 @@ const Page = () => {
     // Trả về cả doanh thu và số lượng đơn hàng
     return {
       revenue: revenueString,
-      orderCount: filteredOrders.length,
+      totalOrders: filteredOrders.length,
     };
   };
 
   // Tính doanh thu và số lượng đơn hàng của tháng 1, 2025
-  const { revenue, orderCount } = calculateRevenueForMonth(orders, 1, 2025);
-  console.log(`Doanh thu tháng 1/2025: ${revenue}`);
-  console.log(`Số đơn hàng tháng 1/2025: ${orderCount}`);
-
   const revenueByMonth = Array.from({ length: 12 }, (_, i) => {
-    const { revenue } = calculateRevenueForMonth(orders, i + 1, 2025); // Destructure the returned object
+    const { revenue, totalOrders } = calculateRevenueForMonth(
+      orders,
+      i + 1,
+      2025
+    );
+
     return {
       month: (i + 1).toString(),
-      revenue: revenue.replace(/[^\d]/g, ""), // Ensure revenue is a string without any non-numeric characters
+      revenue: parseInt(revenue.replace(/[^\d]/g, ""), 10),
+      totalOrders,
     };
   });
 
+  console.log("revenueByMonth", revenueByMonth);
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+
+  const { revenue: currentRevenue, totalOrders: currentTotalOrders } =
+    calculateRevenueForMonth(orders, currentMonth, currentYear);
   return (
     <div className="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* Sales Summary */}
       <div className="col-span-1 lg:col-span-2 bg-gradient-to-r from-blue-300 to-purple-400 text-white p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-6 ">
-          Báo cáo hoạt động kinh doanh
+          <h2 className="text-3xl font-bold mb-6">
+            {`Báo cáo hoạt động kinh doanh tháng ${currentMonth}`}
+          </h2>
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-xl">
           {[
@@ -161,14 +156,16 @@ const Page = () => {
             },
             {
               icon: <AiOutlineOrderedList className="text-4xl" />,
-              label: "Tổng đơn hàng ",
-              value: orderCount || "0",
+              label: "Đơn hàng",
+              value: currentTotalOrders || "0",
             },
+
             {
               icon: <AiFillTags className="text-4xl" />,
-              label: "Doanh thu",
-              value: revenue || "Chưa có doanh thu",
+              label: "Doanh thu ",
+              value: currentRevenue || "Chưa có doanh thu",
             },
+
             {
               icon: <AiOutlineUserAdd className="text-4xl" />,
               label: "Nhân viên ",
@@ -192,7 +189,7 @@ const Page = () => {
         <h2 className="text-xl font-semibold mb-5 text-gray-800">
           Top 5 Sản phẩm bán chạy
         </h2>
-        <table className="w-full text-sm">
+        <table className="w-full text-[17px]">
           <thead>
             <tr className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
               <th className="py-2 px-3">#</th>
@@ -209,7 +206,7 @@ const Page = () => {
                 }`}
               >
                 <td className="py-3 px-3">{index + 1}</td>
-                <td className="py-3 px-3 font-medium text-gray-700">
+                <td className="py-3 px-3 font-medium text-gray-700 ">
                   {product.productName}
                 </td>
                 <td className="py-3 px-3 text-gray-600">{product.quantity}</td>
@@ -269,62 +266,16 @@ const Page = () => {
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
+            <YAxis
+              tickFormatter={(value) => value.toLocaleString("vi-VN") + " VND"}
+            />
+            <Tooltip
+              formatter={(value) => value.toLocaleString("vi-VN") + " VND"}
+            />
             <Bar dataKey="revenue" fill="#8884d8" barSize={30} />
           </BarChart>
         </ResponsiveContainer>
       </div>
-
-      {/* Orders */}
-      {/* <div className="col-span-1 lg:col-span-2 bg-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-5 text-gray-800">Orders</h2>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-200 text-gray-600 text-sm uppercase tracking-wider">
-              <th className="py-3 px-4 text-left">#</th>
-              <th className="py-3 px-4 text-left">Customer</th>
-              <th className="py-3 px-4 text-left">Total Amount</th>
-              <th className="py-3 px-4 text-left">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order, index) => (
-              <tr
-                key={order.id}
-                className="hover:bg-gray-100 transition-colors border-b last:border-none"
-              >
-                <td className="py-3 px-4 text-gray-700">{index + 1}</td>
-                <td className="py-3 px-4 text-gray-700 font-medium">
-                  {order.user?.name}
-                </td>
-
-                <td className="py-3 px-4 text-gray-700 font-bold">
-                  {order.totalAmount.toString()} VND
-                </td>
-                <td className="py-3 px-4">
-                  <span
-                    className={`inline-block py-1 px-3 rounded-full text-xs font-semibold text-white ${
-                      order.status === "Completed"
-                        ? "bg-green-500"
-                        : order.status === "Pending"
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      
-      <div className="col-span-1 flex flex-wrap gap-4 justify-center">
-        <Button onClick={handleCheckToken}>Check Token</Button>
-        <Button onClick={() => getAllOrders()}>Refresh Orders</Button>
-      </div> */}
     </div>
   );
 };

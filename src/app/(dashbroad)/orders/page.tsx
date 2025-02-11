@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { CartItem, Product } from "@/shared/types/product";
-import { Image, Input, Modal } from "antd";
+import { Button, Image, Input, Modal } from "antd";
 import axios from "axios";
 import { authState } from "@/shared/store/Atoms/auth";
 import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
@@ -574,6 +574,13 @@ const OrderPage: React.FC = () => {
             >
               Thanh toán QR
             </button>
+            <Button
+              type="primary"
+              onClick={() => handlePayment("qr")}
+              className="bg-pink-500 hover:bg-pink-600 text-white"
+            >
+              Thanh toán qua MOMO
+            </Button>
           </div>
         </div>
       </div>
