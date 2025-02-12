@@ -12,14 +12,21 @@ const OrderHistory: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [searchName, setSearchName] = useState<string>("");
   const fetchOrders = async () => {
+    setIsLoading(true);
     await getAllOrders();
     setIsLoading(false);
-    const sortedOrders = [...orders].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    setFilteredOrders(sortedOrders);
   };
+
+  useEffect(() => {
+    if ((orders as Order[]).length > 0) {
+      const sortedOrders = [...(orders as Order[])].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setFilteredOrders(sortedOrders);
+    }
+  }, [orders]);
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -50,12 +57,13 @@ const OrderHistory: React.FC = () => {
     let filtered = orders;
 
     if (date) {
-      filtered = filtered.filter((order) =>
+      filtered = filtered.filter((order: Order) =>
         dayjs(order.createdAt).isSame(dayjs(date), "day")
       );
     }
 
     if (name.trim() !== "") {
+      let filtered: Order[] = [...orders];
       filtered = filtered.filter((order) =>
         order?.user?.name?.toLowerCase().includes(name.toLowerCase())
       );
@@ -70,7 +78,6 @@ const OrderHistory: React.FC = () => {
     setFilteredOrders(filtered);
   };
 
-  
   return (
     <div className="mt-6 p-8 bg-white shadow-lg rounded-xl border border-gray-200">
       <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
@@ -142,6 +149,12 @@ const OrderHistory: React.FC = () => {
                   </p>
                   <p className="text-sm text-gray-700">
                     <span className="font-semibold text-gray-800">
+                      Phương thức thanh toán:
+                      {order.paymentMethod === "cash" ? "  Tiền mặt  " : " QR"}
+                    </span>
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold text-gray-800">
                       Ngày tạo:
                     </span>{" "}
                     {new Date(order.createdAt).toLocaleString()}
@@ -150,7 +163,7 @@ const OrderHistory: React.FC = () => {
                 <div className="text-right">
                   <span className="text-sm text-gray-500">Tổng tiền</span>
                   <span className="block text-xl font-bold text-blue-600">
-                    {formatCurrency(order.totalAmount)}
+                    {formatCurrency(order.amount)}
                   </span>
                 </div>
               </div>

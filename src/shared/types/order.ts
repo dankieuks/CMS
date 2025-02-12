@@ -3,7 +3,8 @@ export interface Order {
   status: string;
   createdAt: string;
   updatedAt: string;
-  totalAmount: number;
+  amount: number;
+  paymentMethod:string;
   userId: string;
   user: { name: string };
   items: {

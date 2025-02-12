@@ -210,12 +210,12 @@ const StaffDetail = () => {
                 label: "Mức lương /h",
                 name: "hourlyRate",
                 value: formData.hourlyRate,
-                isEditable: true,
+                isEditable: formData.role === "ADMIN",
               },
               {
                 label: "Chức vụ",
                 name: "role",
-                value: formData.role,
+                value: formData.role === "ADMIN" ? "Quản lý" : "Nhân viên",
                 isEditable: false,
               },
               {

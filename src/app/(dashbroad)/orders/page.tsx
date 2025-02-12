@@ -7,10 +7,9 @@ import axios from "axios";
 import { authState } from "@/shared/store/Atoms/auth";
 import { productState, selectedBrandState } from "@/shared/store/Atoms/product";
 import { enqueueSnackbar } from "notistack";
-import { useGetAllOrder, useGetOrder } from "@/shared/hooks/order";
-import { ordersState } from "@/shared/store/Atoms/order";
 import Link from "next/link";
 import { useGetProduct } from "@/shared/hooks/product";
+import { useMoMo } from "@/shared/hooks/payment";
 const OrderPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -21,7 +20,9 @@ const OrderPage: React.FC = () => {
   const auth = useRecoilValue(authState);
   const intervalIdRef = useRef<number | null>(null);
   const [orderId, setOrderId] = useState<string>("");
+  const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
 
+  const { createMoMoPayment } = useMoMo();
   const { getProduct } = useGetProduct();
   const getProducts = async () => {
     const fetchedProducts = await getProduct();
@@ -90,7 +91,7 @@ const OrderPage: React.FC = () => {
       intervalIdRef.current = null;
     }
   };
-  const totalAmount = cart.reduce(
+  const amount = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
@@ -105,15 +106,15 @@ const OrderPage: React.FC = () => {
     setOrderId(`CMS${random}`);
   }, []);
 
-  const createVietQR = (totalAmount: number) => {
+  const createVietQR = (amount: number) => {
     return `https://img.vietqr.io/image/${MY_BANK.BANK_ID}-${
       MY_BANK.ACCOUNT_NO
-    }-compact.png?amount=${totalAmount.toString()}&addInfo=${orderId}&accountName=${
+    }-compact.png?amount=${amount.toString()}&addInfo=${orderId}&accountName=${
       MY_BANK.ACCOUNT_NAME
     }`;
   };
 
-  const checkPaid = async (totalAmount: number): Promise<boolean> => {
+  const checkPaid = async (amount: number): Promise<boolean> => {
     try {
       const response = await axios.get(
         "https://script.google.com/macros/s/AKfycbwhxRhx0FUL4AabonwU-Wyck1nnOoQ1PGw35pNrrMajRbwT-40HdCDFZMWcsvDB8B7Y/exec"
@@ -128,7 +129,7 @@ const OrderPage: React.FC = () => {
       const match = contentPaid?.match(/CMS\d+/);
       const matchedOrderId = match?.[0]?.trim();
 
-      if (pricePaid === totalAmount && matchedOrderId === orderId) {
+      if (pricePaid === amount && matchedOrderId === orderId) {
         enqueueSnackbar("Thanh toán thành công", {
           variant: "success",
           autoHideDuration: 1500,
@@ -163,11 +164,13 @@ const OrderPage: React.FC = () => {
       });
 
       printInvoice(response.data);
+      return true;
     } catch (error) {
       enqueueSnackbar("Xảy ra lỗi khi tạo đơn, vui lòng tạo lại", {
         variant: "error",
         autoHideDuration: 1500,
       });
+      return false;
     }
   };
 
@@ -317,7 +320,12 @@ const OrderPage: React.FC = () => {
               </table>
               <hr/>
               <div class="total-amount">
-                Tổng cộng: ${orderData.totalAmount.toLocaleString()} VND
+                Tổng cộng: ${orderData.amount.toLocaleString()} VND
+              </div>
+              <div class="info-note">
+                Phương thức: ${
+                  orderData.paymentMethod === "cash" ? "  Tiền mặt  " : " QR"
+                } 
               </div>
               <div class="info-note">
                 NVBH: ${auth?.user?.name}
@@ -383,27 +391,54 @@ const OrderPage: React.FC = () => {
         productId: item.id,
         quantity: item.quantity,
       })),
-      totalAmount,
+      amount,
       paymentMethod: method,
     };
-
+    localStorage.setItem("pendingOrder", JSON.stringify(orderData));
     if (method === "cash") {
       createOrder(orderData);
     }
 
     if (method === "qr") {
-      setIsQRModalVisible(true);
-
-      intervalIdRef.current = window.setInterval(async () => {
-        const isPaid = await checkPaid(totalAmount);
-
-        if (isPaid) {
-          createOrder(orderData);
-          closeQRModal();
-        }
-      }, 2000);
+      const orderInfo = `CMS${Math.floor(Math.random() * 1000000)}`;
+      createMoMoPayment(amount, orderInfo);
     }
   };
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const resultCode = searchParams.get("resultCode");
+
+        if (resultCode === "0") {
+          enqueueSnackbar("Thanh toán thành công!", { variant: "success" });
+
+          const hasPrinted = localStorage.getItem("hasPrintedInvoice");
+          if (hasPrinted) return; // Nếu đã in trước đó, không in lại
+
+          const pendingOrder = localStorage.getItem("pendingOrder");
+          if (pendingOrder) {
+            const orderData = JSON.parse(pendingOrder);
+
+            const response = await createOrder(orderData);
+
+            console.log("response", response);
+            if (response) {
+              printInvoice(orderData);
+              localStorage.removeItem("pendingOrder");
+              localStorage.setItem("hasPrintedInvoice", "true"); // Đánh dấu đã in
+            } else {
+              console.error("Lỗi khi tạo đơn hàng:", response);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Lỗi kiểm tra thanh toán:", error);
+      }
+    };
+
+    checkPaymentStatus();
+  }, []);
 
   return (
     <section className="bg-gray-100 p-5 rounded-xl flex flex-col">
@@ -501,14 +536,16 @@ const OrderPage: React.FC = () => {
             </span>
           </h2>
 
-          <ul className="max-h-screen overflow-y-auto mb-4 bg-white shadow-lg rounded-lg p-4 flex-grow space-y-2">
+          <ul className="max-h-screen text-lg overflow-y-auto mb-4 bg-white shadow-lg rounded-lg p-4 flex-grow space-y-2">
             {cart.length === 0 ? (
-              <li className="text-center text-gray-500">Giỏ hàng trống</li>
+              <li className="text-center text-gray-500 text-lg">
+                Giỏ hàng trống
+              </li>
             ) : (
               cart.map((item, index) => (
                 <li
                   key={item.id}
-                  className="flex justify-between items-center "
+                  className="flex justify-between items-center text-lg"
                 >
                   <div>
                     <div>
@@ -562,46 +599,49 @@ const OrderPage: React.FC = () => {
           </div>
 
           <div className="flex gap-5">
-            <button
+            <Button
               onClick={() => handlePayment("cash")}
-              className="bg-blue-500 text-white py-5 rounded-md w-full hover:bg-blue-600 transition duration-200"
+              className="bg-blue-500 text-white py-5 rounded-md w-full hover:bg-blue-600 transition duration-200 font-bold"
             >
               Tiền mặt
-            </button>
-            <button
-              onClick={() => handlePayment("qr")}
-              className="bg-green-500 text-white py-5 rounded-md w-full hover:bg-green-600 transition duration-200"
-            >
-              Thanh toán QR
-            </button>
+            </Button>
             <Button
               type="primary"
               onClick={() => handlePayment("qr")}
-              className="bg-pink-500 hover:bg-pink-600 text-white"
+              className="bg-red-500 text-white py-5 rounded-md w-full hover:bg-blue-600 transition duration-200 font-bold"
             >
-              Thanh toán qua MOMO
+              Thanh toán bằng QR
             </Button>
           </div>
         </div>
       </div>
-
-      <Modal
-        title="Thanh toán bằng QR-CODE"
-        open={isQRModalVisible}
-        onCancel={closeQRModal}
+      {/* <Modal
+        title={
+          <span className="text-xl font-bold text-gray-800">
+            Vui lòng chọn phương thức thanh toán:
+          </span>
+        }
+        open={isPaymentModalVisible}
+        onCancel={() => setIsPaymentModalVisible(false)}
         footer={null}
-        width={500}
+        centered
+        className="max-w-lg"
       >
-        <div className="flex flex-col items-start text-left gap-y-2">
-          <Image src={createVietQR(totalAmount)} preview={true} />
-          <div className="text-lg px-16 font-semibold text-gray-700 mb-2">
-            MÃ ĐƠN HÀNG: {orderId}
-          </div>
-          <div className="text-lg px-16 font-semibold text-gray-700 mb-4">
-            HÓA ĐƠN: {totalAmount.toLocaleString()} VND
-          </div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 w-full">
+          <Button
+            type="default"
+            className="flex flex-col items-center justify-center gap-3 w-60 h-60 p-3 border border-gray-300 rounded-xl shadow-md transition-all hover:shadow-lg"
+            onClick={() => handlePayment}
+          >
+            <img
+              src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a1/d4/06/a1d4069d-c75a-1319-025a-34617b31b336/AppIcon-0-0-1x_U007emarketing-0-0-0-5-0-0-sRGB-85-220.png/1024x1024bb.png"
+              alt="MOMO"
+              className="w-32 h-32 rounded-lg"
+            />
+            <span className="text-lg font-bold">Thanh toán qua MOMO</span>
+          </Button>
         </div>
-      </Modal>
+      </Modal> */}
     </section>
   );
 };

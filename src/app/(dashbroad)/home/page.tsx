@@ -10,9 +10,8 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { productState } from "@/shared/store/Atoms/product";
 import { useGetProduct } from "@/shared/hooks/product";
 import { authState } from "@/shared/store/Atoms/auth";
-import { Button } from "antd";
-import { jwtDecode } from "jwt-decode";
-import { useGetAllOrder, useGetOrder } from "@/shared/hooks/order";
+
+import { useGetAllOrder } from "@/shared/hooks/order";
 import {
   PieChart,
   Pie,
@@ -31,6 +30,11 @@ interface BestSellProduct {
   productName: string;
   quantity: number;
 }
+type Order = {
+  createdAt: Date;
+  items: BestSellProduct[];
+  userId: string;
+};
 const Page = () => {
   const { getProduct } = useGetProduct();
   const [products, setProducts] = useRecoilState(productState);
@@ -52,7 +56,7 @@ const Page = () => {
   oneMonthAgo.setMonth(today.getMonth() - 1);
   const employeeSales: { [key: string]: number } = {};
   const productSales: { [key: string]: number } = {};
-  orders.forEach((order) => {
+  orders.forEach((order: Order) => {
     const orderDate = new Date(order.createdAt);
     if (orderDate >= oneMonthAgo && orderDate <= today) {
       order.items.forEach((product: BestSellProduct) => {
@@ -91,33 +95,28 @@ const Page = () => {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
-  const calculateRevenueForMonth = (orders, month, year) => {
-    const startDate = new Date(year, month - 1, 1); // Tháng bắt đầu (month - 1 vì JavaScript bắt đầu từ 0)
-    const endDate = new Date(year, month, 0); // Tháng kết thúc (ngày cuối cùng của tháng)
+  const calculateRevenueForMonth = (orders: any, month: any, year: any) => {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
 
-    // Lọc các đơn hàng trong tháng
-    const filteredOrders = orders.filter((order) => {
+    const filteredOrders = orders.filter((order: any) => {
       const orderDate = new Date(order.createdAt);
       return orderDate >= startDate && orderDate <= endDate;
     });
 
-    // Tính tổng doanh thu
     const totalRevenue = filteredOrders.reduce(
-      (acc, order) => acc + order.totalAmount,
+      (acc: any, order: any) => acc + order.amount,
       0
     );
 
-    // Định dạng doanh thu thành chuỗi và thêm đơn vị (VND hoặc bất kỳ đơn vị tiền tệ nào bạn muốn)
-    const revenueString = totalRevenue.toLocaleString("vi-VN") + " VND"; // Định dạng theo kiểu Việt Nam
+    const revenueString = totalRevenue.toLocaleString("vi-VN") + " VND";
 
-    // Trả về cả doanh thu và số lượng đơn hàng
     return {
       revenue: revenueString,
       totalOrders: filteredOrders.length,
     };
   };
 
-  // Tính doanh thu và số lượng đơn hàng của tháng 1, 2025
   const revenueByMonth = Array.from({ length: 12 }, (_, i) => {
     const { revenue, totalOrders } = calculateRevenueForMonth(
       orders,
@@ -267,10 +266,12 @@ const Page = () => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
             <YAxis
-              tickFormatter={(value) => value.toLocaleString("vi-VN") + " VND"}
+              tickFormatter={(value: any) =>
+                value.toLocaleString("vi-VN") + " VND"
+              }
             />
             <Tooltip
-              formatter={(value) => value.toLocaleString("vi-VN") + " VND"}
+              formatter={(value: any) => value.toLocaleString("vi-VN") + " VND"}
             />
             <Bar dataKey="revenue" fill="#8884d8" barSize={30} />
           </BarChart>

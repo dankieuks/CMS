@@ -17,6 +17,8 @@ import * as XLSX from "xlsx";
 
 import { useGetUser } from "@/shared/hooks/user";
 import { Employees } from "@/shared/types/user";
+import { useRecoilValue } from "recoil";
+import { authState } from "@/shared/store/Atoms/auth";
 
 const { Option } = Select;
 
@@ -33,6 +35,8 @@ const WorkScheduleCalendar = () => {
   const [form] = Form.useForm();
   const [isReadOnly, setIsReadOnly] = useState(true);
   const [employees, setEmployees] = useState<Employees[]>([]);
+  const auth = useRecoilValue(authState);
+  const [loading, setLoading] = useState(false);
   const getUsers = async () => {
     const users = await fetchUsers();
     setEmployees(users);
@@ -40,7 +44,22 @@ const WorkScheduleCalendar = () => {
   const { fetchUsers } = useGetUser();
   useEffect(() => {
     getUsers();
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/system-settings/edit-schedule`
+        );
+        console.log("Dữ liệu từ API:", response.data);
+        setIsReadOnly(response.data.isEnabled);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+        message.error("Không thể lấy trạng thái lịch!");
+      }
+    };
+
+    fetchData();
   }, []);
+
   const fetchSchedules = async () => {
     try {
       const response = await axios.get(
@@ -221,6 +240,24 @@ const WorkScheduleCalendar = () => {
     }
   };
 
+  const handleToggleEdit = async () => {
+    const newStatus = !isReadOnly;
+    setIsReadOnly(newStatus);
+    try {
+      setLoading(true);
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/system-settings/edit-schedule/toggle`,
+        {
+          isEnabled: newStatus,
+        }
+      );
+      setIsReadOnly(newStatus);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="bg-white m-6 p-3 md:p-6 rounded-xl shadow-md  ">
       <div className="flex flex-col md:flex-row  gap-4 justify-between items-center text-center">
@@ -232,7 +269,8 @@ const WorkScheduleCalendar = () => {
           <span>{isReadOnly ? "Chỉ xem" : "Chỉnh sửa"}</span>
           <Switch
             checked={!isReadOnly}
-            onChange={() => setIsReadOnly(!isReadOnly)}
+            onChange={handleToggleEdit}
+            disabled={auth?.user?.role === "STAFF"}
           />
           <Button
             type="primary"

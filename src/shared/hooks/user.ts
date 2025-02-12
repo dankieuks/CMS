@@ -152,6 +152,7 @@ export const useUpdateUser = () => {
       formData.append("bankCode", String(updateUser.bankCode));
 
     if (updateUser.bank) formData.append("bank", updateUser.bank);
+    // if (updateUser.role) formData.append("bank", updateUser.role);
     if (updateUser.hourlyRate)
       formData.append("hourlyRate", String(updateUser.hourlyRate));
     if (updateUser.image) {
