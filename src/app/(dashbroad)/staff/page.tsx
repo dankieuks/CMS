@@ -225,7 +225,9 @@ const AdminPage: React.FC = () => {
           </div>
         </div>
         <Modal
-          title={currentStaff ? "Edit Employee" : "Add Employee"}
+          title={
+            currentStaff ? "Cập nhật hồ sơ nhân viên" : "Thêm nhân viên mới"
+          }
           open={showModal}
           onCancel={closeModal}
           footer={null}

@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import * as XLSX from "xlsx";
 const SalaryComponent: React.FC = () => {
-  const [month, setMonth] = useState("2025-01");
+  const [month, setMonth] = useState(dayjs().format("YYYY-MM"));
   const [userIds, setUserIds] = useState<string[]>([]);
   const [employees, setEmployees] = useState<Employees[]>([]);
   const { salaries, loading } = useSalaries(month, userIds);

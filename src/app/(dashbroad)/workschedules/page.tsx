@@ -23,9 +23,14 @@ import { authState } from "@/shared/store/Atoms/auth";
 const { Option } = Select;
 
 const shifts = [
-  { label: "Sáng", value: "Ca Sáng", time: "08:00 - 12:00" },
-  { label: "Chiều", value: "Ca Chiều", time: "12:00 - 16:00" },
-  { label: "Tối", value: "Ca Tối", time: "16:00 - 20:00" },
+  { label: "Sáng", value: "Ca Sáng", time: "08:00 - 12:00", color: "#FFA500" }, // Màu cam
+  {
+    label: "Chiều",
+    value: "Ca Chiều",
+    time: "12:00 - 16:00",
+    color: "#32CD32",
+  }, // Màu xanh lá
+  { label: "Tối", value: "Ca Tối", time: "16:00 - 20:00", color: "#1E90FF" }, // Màu xanh dương
 ];
 
 const WorkScheduleCalendar = () => {
@@ -118,7 +123,7 @@ const WorkScheduleCalendar = () => {
       fetchSchedules();
     } catch (error) {
       console.error("Error creating schedule:", error);
-      message.error("Không thể thêm lịch làm việc!");
+      message.error("Không thể thêm trùng lịch làm việc!");
     }
   };
 
@@ -152,10 +157,17 @@ const WorkScheduleCalendar = () => {
         )}
         {daySchedules.map((schedule) => {
           const employee = employees.find((e) => e.id === schedule.userId);
+          const shiftDetails = shifts.find(
+            (s) => s.value === schedule.shifts[0]
+          );
           return (
             <div
               key={schedule.id}
-              className="text-[17px] my-[-5px] flex justify-between items-center"
+              className="text-[14px] my-[-5px] flex justify-between items-center px-2 py-1 rounded-lg"
+              style={{
+                backgroundColor: shiftDetails?.color || "#ccc",
+                color: "#fff",
+              }}
             >
               <span>
                 {employee?.name} - {schedule.shifts.join(", ")}
