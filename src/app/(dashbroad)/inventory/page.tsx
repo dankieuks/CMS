@@ -12,6 +12,7 @@ import {
   Select,
 } from "antd";
 import axios from "axios";
+import ProtectedRoute from "@/shared/providers/auth.provider";
 
 interface StockEntry {
   id?: string;
@@ -113,120 +114,126 @@ export default function StockManagement() {
   };
 
   return (
-    <div className="p-6 m-6 bg-white rounded-xl shadow-md space-y-6 ">
-      <h1 className="text-3xl font-bold text-gray-800 ">📦 Quản lý kho</h1>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleAddStockBatch}
-        className="space-y-4 "
-      >
-        {entries.map((entry, index) => (
-          <div key={index} className="flex space-x-4 items-center h-10">
-            <Input
-              placeholder="Tên nguyên liệu"
-              value={entry.ingredient}
-              className="w-1/4 h-10 text-[18px]"
-              onChange={(e) =>
-                handleEntryChange(index, "ingredient", e.target.value)
-              }
-            />
-            <Input
-              type="number"
-              placeholder="Số lượng"
-              value={entry.quantity}
-              className="w-1/6 h-10 text-[18px]"
-              onChange={(e) =>
-                handleEntryChange(index, "quantity", e.target.value)
-              }
-            />
-            <Select
-              placeholder="Chọn đơn vị"
-              className="w-1/6 h-10 text-[18px]"
-              value={entry.unit}
-              onChange={(value) => handleEntryChange(index, "unit", value)}
-            >
-              <Select.Option value="kg">Kilogram (kg)</Select.Option>
-              <Select.Option value="g">Gram (g)</Select.Option>
-              <Select.Option value="l">Lít (l)</Select.Option>
-              <Select.Option value="ml">Mililít (ml)</Select.Option>
-              <Select.Option value="pcs">Cái (pcs)</Select.Option>
-            </Select>
-            <Input
-              placeholder="Nhà cung cấp"
-              value={entry.supplier}
-              className="w-1/4 h-10 text-[18px]"
-              onChange={(e) =>
-                handleEntryChange(index, "supplier", e.target.value)
-              }
-            />
+    <ProtectedRoute requiredRole="ADMIN">
+      <div className="p-6 m-6 bg-white rounded-xl shadow-md space-y-6 ">
+        <h1 className="text-3xl font-bold text-gray-800 ">📦 Quản lý kho</h1>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleAddStockBatch}
+          className="space-y-4 "
+        >
+          {entries.map((entry, index) => (
+            <div key={index} className="flex space-x-4 items-center h-10">
+              <Input
+                placeholder="Tên nguyên liệu"
+                value={entry.ingredient}
+                className="w-1/4 h-10 text-[18px]"
+                onChange={(e) =>
+                  handleEntryChange(index, "ingredient", e.target.value)
+                }
+                required
+              />
+              <Input
+                type="number"
+                placeholder="Số lượng"
+                value={entry.quantity}
+                className="w-1/6 h-10 text-[18px]"
+                onChange={(e) =>
+                  handleEntryChange(index, "quantity", e.target.value)
+                }
+                required
+              />
+              <Select
+                placeholder="Chọn đơn vị"
+                className="w-1/6 h-10 text-[18px]"
+                value={entry.unit}
+                onChange={(value) => handleEntryChange(index, "unit", value)}
+              >
+                <Select.Option value="kg">Kilogram (kg)</Select.Option>
+                <Select.Option value="g">Gram (g)</Select.Option>
+                <Select.Option value="l">Lít (l)</Select.Option>
+                <Select.Option value="ml">Mililít (ml)</Select.Option>
+                <Select.Option value="pcs">Cái (pcs)</Select.Option>
+                <Select.Option value="pcs">Bịch</Select.Option>
+              </Select>
+              <Input
+                placeholder="Nhà cung cấp"
+                value={entry.supplier}
+                className="w-1/4 h-10 text-[18px]"
+                onChange={(e) =>
+                  handleEntryChange(index, "supplier", e.target.value)
+                }
+                required
+              />
+              <Button
+                onClick={() => removeEntry(index)}
+                danger
+                className="bg-red-500 text-black h-10 px-8 text-[18px]"
+              >
+                Xóa
+              </Button>
+            </div>
+          ))}
+          <div className="flex justify-start gap-x-16">
             <Button
-              onClick={() => removeEntry(index)}
-              danger
-              className="bg-red-500 text-black h-10 px-8 text-[18px]"
+              type="dashed"
+              onClick={addNewEntry}
+              className="bg-blue-500 text-white h-10 text-[18px]"
             >
-              Xóa
+              + Thêm nguyên liệu
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="bg-green-500 text-white h-10 text-[18px]"
+            >
+              Nhập kho
             </Button>
           </div>
-        ))}
-        <div className="flex justify-start gap-x-16">
-          <Button
-            type="dashed"
-            onClick={addNewEntry}
-            className="bg-blue-500 text-white h-10 text-[18px]"
-          >
-            + Thêm nguyên liệu
-          </Button>
-          <Button
-            type="primary"
-            htmlType="submit"
-            className="bg-green-500 text-white h-10 text-[18px]"
-          >
-            Nhập kho
-          </Button>
-        </div>
-      </Form>
-      <Collapse accordion className="bg-gray-100 rounded-lg p-4 shadow-md">
-        {batches.map((batch) => (
-          <Collapse.Panel
-            key={batch.id}
-            header={`📅 Lần nhập: ${new Date(
-              batch.createdAt
-            ).toLocaleString()}`}
-            className="bg-white rounded-lg shadow-md text-[18px] "
-          >
-            <Table
-              columns={[
-                {
-                  title: "Nguyên liệu",
-                  dataIndex: "ingredient",
-                  key: "ingredient",
-                },
-                { title: "Số lượng", dataIndex: "quantity", key: "quantity" },
-                { title: "Đơn vị", dataIndex: "unit", key: "unit" },
-                {
-                  title: "Nhà cung cấp",
-                  dataIndex: "supplier",
-                  key: "supplier",
-                },
-              ]}
-              dataSource={batch.entries}
-              rowKey="id"
-              pagination={false}
-              size="small"
-              className=" custom-table border rounded-lg text-lg"
-            />
-            <Popconfirm
-              title="Xóa lần nhập này?"
-              onConfirm={() => handleDeleteBatch(batch.id)}
+        </Form>
+        <Collapse accordion className="bg-gray-100 rounded-lg p-4 shadow-md">
+          {batches.map((batch) => (
+            <Collapse.Panel
+              key={batch.id}
+              header={`📅 Lần nhập: ${new Date(
+                batch.createdAt
+              ).toLocaleString()}`}
+              className="bg-white rounded-lg shadow-md text-[18px] "
             >
-              <Button danger className="bg-red-500 text-black  mt-4">
-                Xóa lần nhập kho
-              </Button>
-            </Popconfirm>
-          </Collapse.Panel>
-        ))}
-      </Collapse>
-    </div>
+              <Table
+                columns={[
+                  {
+                    title: "Nguyên liệu",
+                    dataIndex: "ingredient",
+                    key: "ingredient",
+                  },
+                  { title: "Số lượng", dataIndex: "quantity", key: "quantity" },
+                  { title: "Đơn vị", dataIndex: "unit", key: "unit" },
+                  {
+                    title: "Nhà cung cấp",
+                    dataIndex: "supplier",
+                    key: "supplier",
+                  },
+                ]}
+                dataSource={batch.entries}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                className=" custom-table border rounded-lg text-lg"
+              />
+              <Popconfirm
+                title="Xóa lần nhập này?"
+                onConfirm={() => handleDeleteBatch(batch.id)}
+              >
+                <Button danger className="bg-red-500 text-black  mt-4">
+                  Xóa lần nhập kho
+                </Button>
+              </Popconfirm>
+            </Collapse.Panel>
+          ))}
+        </Collapse>
+      </div>
+    </ProtectedRoute>
   );
 }

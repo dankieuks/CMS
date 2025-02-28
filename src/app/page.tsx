@@ -19,12 +19,12 @@ function useTokenCheck(): boolean {
 
     const checkToken = async () => {
       if (pathname === "/") {
-        router.replace("/home");
+        router.replace("/orders");
         return;
       }
 
       if (token && !isTokenExpired(token) && guestPaths.includes(pathname)) {
-        router.push("/home");
+        router.push("/orders");
         return;
       }
 

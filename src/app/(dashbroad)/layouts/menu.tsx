@@ -25,11 +25,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onMenuClick, role }) => {
       icon: <AppstoreOutlined style={iconStyle} />,
       children: [
         {
-          key: "1",
-          label: <Link href="/home">Trang chủ</Link>,
-          icon: <AppstoreOutlined style={iconStyle} />,
-        },
-        {
           key: "2",
           label: <Link href="/orders">Tạo đơn hàng</Link>,
           icon: <OrderedListOutlined style={iconStyle} />,
@@ -43,6 +38,11 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onMenuClick, role }) => {
             label: "Quản lý cửa hàng",
             icon: <SettingOutlined style={iconStyle} />,
             children: [
+              {
+                key: "1",
+                label: <Link href="/home">Quản lý kinh doanh</Link>,
+                icon: <AppstoreOutlined style={iconStyle} />,
+              },
               {
                 key: "3",
                 label: <Link href="/staff">Quản lý nhân viên</Link>,
@@ -89,7 +89,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onMenuClick, role }) => {
       }}
       mode="inline"
       defaultOpenKeys={["sub1", "sub2", "sub3"]}
-      defaultSelectedKeys={["1"]}
+      defaultSelectedKeys={["2"]}
       items={items}
       style={{
         minHeight: "100%",
