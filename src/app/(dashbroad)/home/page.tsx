@@ -1,23 +1,20 @@
 "use client";
+import { AiOutlineCoffee } from "react-icons/ai";
 import {
   AiOutlineBarChart,
   AiOutlineOrderedList,
   AiFillTags,
   AiOutlineUserAdd,
 } from "react-icons/ai";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { productState } from "@/shared/store/Atoms/product";
 import { useGetProduct } from "@/shared/hooks/product";
 import { authState } from "@/shared/store/Atoms/auth";
-
 import { useGetAllOrder } from "@/shared/hooks/order";
 import {
-  PieChart,
-  Pie,
   Cell,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   BarChart,
   CartesianGrid,
@@ -25,6 +22,11 @@ import {
   YAxis,
   Bar,
 } from "recharts";
+import { ordersState } from "@/shared/store/Atoms/order";
+import { useGetUser } from "@/shared/hooks/user";
+import { Employees } from "@/shared/types/user";
+import axios from "axios";
+import { Card, Collapse, Table } from "antd";
 
 interface BestSellProduct {
   productName: string;
@@ -35,77 +37,136 @@ type Order = {
   items: BestSellProduct[];
   userId: string;
 };
+
+interface StockEntry {
+  id?: string;
+  ingredient: string;
+  quantity: string;
+  unit: string;
+  supplier: string;
+}
+
+interface StockEntryBatch {
+  id: string;
+  createdAt: string;
+  entries: StockEntry[];
+}
 const Page = () => {
   const { getProduct } = useGetProduct();
+  const [employees, setEmployees] = useState<Employees[]>([]);
   const [products, setProducts] = useRecoilState(productState);
+  const [orders, setOrders] = useRecoilState(ordersState);
+  const [batches, setBatches] = useState<StockEntryBatch[]>([]);
   const auth = useRecoilValue(authState);
-  const { orders, getAllOrders } = useGetAllOrder();
-
-  const getProducts = async () => {
-    const data = await getProduct();
-    setProducts(data);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const { getAllOrders } = useGetAllOrder();
+  const { fetchUsers } = useGetUser();
+  const getUsers = async () => {
+    const users = await fetchUsers();
+    setEmployees(users);
   };
 
   useEffect(() => {
-    getProducts();
-    getAllOrders();
+    getUsers();
+    const fetchData = async () => {
+      const [productsData, ordersData] = await Promise.all([
+        getProduct(),
+        getAllOrders(),
+      ]);
+      setProducts(productsData);
+      setOrders(ordersData);
+    };
+    fetchData();
+  }, []);
+  useEffect(() => {
+    fetchStockBatches();
   }, []);
 
-  const today = new Date();
-  const oneMonthAgo = new Date(today);
-  oneMonthAgo.setMonth(today.getMonth() - 1);
-  const employeeSales: { [key: string]: number } = {};
-  const productSales: { [key: string]: number } = {};
-  orders.forEach((order: Order) => {
-    const orderDate = new Date(order.createdAt);
-    if (orderDate >= oneMonthAgo && orderDate <= today) {
-      order.items.forEach((product: BestSellProduct) => {
-        if (productSales[product.productName]) {
-          productSales[product.productName] += product.quantity;
-        } else {
-          productSales[product.productName] = product.quantity;
-        }
-        const employeeId = order.userId;
-        if (employeeSales[employeeId]) {
-          employeeSales[employeeId] += product.quantity;
-        } else {
-          employeeSales[employeeId] = product.quantity;
-        }
-      });
+  const fetchStockBatches = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/stock/batches`
+      );
+      setBatches(data);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu kho.");
     }
+  };
+
+  // Lọc các lần nhập kho theo tháng và năm
+  const filteredBatches = batches.filter((batch) => {
+    const batchDate = new Date(batch.createdAt);
+    return (
+      batchDate.getMonth() + 1 === selectedMonth &&
+      batchDate.getFullYear() === selectedYear
+    );
   });
-  const sortedEmployees = Object.entries(employeeSales)
-    .map(([employeeId, quantity]) => ({ employeeId, quantity }))
-    .sort((a, b) => b.quantity - a.quantity);
+  const getTopSellingProducts = (
+    orders: Order[],
+    month: number,
+    year: number
+  ) => {
+    const filteredOrders = orders.filter((order) => {
+      const orderDate = new Date(order.createdAt);
+      return (
+        orderDate.getMonth() + 1 === month && orderDate.getFullYear() === year
+      );
+    });
 
-  const topEmployees = sortedEmployees.slice(0, 3);
+    let totalProductsSold = 0;
 
-  const sortedProducts = Object.entries(productSales)
-    .map(([productName, quantity]) => ({ productName, quantity }))
-    .sort((a, b) => b.quantity - a.quantity);
+    const productSales: { [key: string]: number } = {};
+    filteredOrders.forEach((order) => {
+      order.items.forEach((product) => {
+        productSales[product.productName] =
+          (productSales[product.productName] || 0) + product.quantity;
+        totalProductsSold += product.quantity;
+      });
+    });
 
-  const topSellingProducts = sortedProducts.slice(0, 5);
+    const sortedProducts = Object.entries(productSales)
+      .map(([productName, quantity]) => ({ productName, quantity }))
+      .sort((a, b) => a.quantity - b.quantity)
+      .slice(0, 5);
 
-  const salesData = [
-    { name: "Kiều Đình Đàn", value: 45 },
-    { name: "Trịnh Thị Ly", value: 29 },
-    { name: "Vũ Đức Huy", value: 18 },
-    { name: "Dương Thu Phương", value: 25 },
-  ];
+    return {
+      topProducts:
+        sortedProducts.length > 0
+          ? sortedProducts
+          : [{ productName: "Không có dữ liệu", quantity: 0 }],
+      totalProductsSold,
+    };
+  };
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+  const { topProducts, totalProductsSold } = getTopSellingProducts(
+    orders,
+    selectedMonth,
+    selectedYear
+  );
+
+  const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"];
 
   const calculateRevenueForMonth = (orders: any, month: any, year: any) => {
+    if (
+      !Array.isArray(orders) ||
+      !Number.isInteger(month) ||
+      !Number.isInteger(year)
+    ) {
+      throw new Error("Invalid input parameters");
+    }
+
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
-
-    const filteredOrders = orders.filter((order: any) => {
+    endDate.setHours(23, 59, 59, 999);
+    const filteredOrders = orders.filter((order) => {
       const orderDate = new Date(order.createdAt);
       return orderDate >= startDate && orderDate <= endDate;
     });
 
     const totalRevenue = filteredOrders.reduce(
-      (acc: any, order: any) => acc + order.amount,
+      (acc, order) => acc + (Number(order.amount) || 0),
       0
     );
 
@@ -123,7 +184,6 @@ const Page = () => {
       i + 1,
       2025
     );
-
     return {
       month: (i + 1).toString(),
       revenue: parseInt(revenue.replace(/[^\d]/g, ""), 10),
@@ -132,21 +192,54 @@ const Page = () => {
   });
 
   console.log("revenueByMonth", revenueByMonth);
+
   const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
 
   const { revenue: currentRevenue, totalOrders: currentTotalOrders } =
-    calculateRevenueForMonth(orders, currentMonth, currentYear);
+    calculateRevenueForMonth(orders, selectedMonth, selectedYear);
+
+  console.log(`Current month revenue (${currentMonth}/${currentYear}):`, {
+    revenue: currentRevenue,
+    totalOrders: currentTotalOrders,
+  });
+
   return (
     <div className="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* Sales Summary */}
       <div className="col-span-1 lg:col-span-2 bg-gradient-to-r from-blue-300 to-purple-400 text-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-6 ">
+        <div className=" flex justify-between text-2xl font-bold mb-6">
           <h2 className="text-3xl font-bold mb-6">
-            {`Báo cáo hoạt động kinh doanh tháng ${currentMonth}`}
+            {`Báo cáo hoạt động kinh doanh tháng ${selectedMonth}-${selectedYear}`}
           </h2>
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-xl">
+          <div className="flex justify-end mb-4 gap-4 text-black">
+            <div>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="border bg-transparent rounded-lg p-2"
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    Tháng {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="border bg-transparent rounded-lg p-2"
+              >
+                {Array.from({ length: 5 }, (_, i) => (
+                  <option key={currentYear - i} value={currentYear - i}>
+                    Năm {currentYear - i}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-6 text-xl">
           {[
             {
               icon: <AiOutlineBarChart className="text-4xl" />,
@@ -156,19 +249,22 @@ const Page = () => {
             {
               icon: <AiOutlineOrderedList className="text-4xl" />,
               label: "Đơn hàng",
-              value: currentTotalOrders || "0",
+              value: currentTotalOrders || "Chưa có đơn hàng",
             },
-
             {
               icon: <AiFillTags className="text-4xl" />,
-              label: "Doanh thu ",
+              label: "Doanh thu",
               value: currentRevenue || "Chưa có doanh thu",
             },
-
+            {
+              icon: <AiOutlineCoffee className="text-4xl" />,
+              label: "Số sản phẩm đã bán",
+              value: totalProductsSold || "0",
+            },
             {
               icon: <AiOutlineUserAdd className="text-4xl" />,
-              label: "Nhân viên ",
-              value: "7",
+              label: "Nhân viên",
+              value: employees.length,
             },
           ].map((item, index) => (
             <div
@@ -183,75 +279,88 @@ const Page = () => {
           ))}
         </div>
       </div>
-      {/* Top Products */}
-      <div className="col-span-1 bg-white p-6 rounded-lg shadow-lg ">
-        <h2 className="text-xl font-semibold mb-5 text-gray-800">
-          Top 5 Sản phẩm bán chạy
+      <div className="col-span-1 bg-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-semibold mb-5 text-gray-800">
+          {` Top sản phẩm bán chạy tháng ${selectedMonth}-${selectedYear}`}
         </h2>
-        <table className="w-full text-[17px]">
-          <thead>
-            <tr className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
-              <th className="py-2 px-3">#</th>
-              <th className="py-2 px-3">Tên sản phẩm</th>
-              <th className="py-2 px-3">Số lượng</th>
-            </tr>
-          </thead>
-          <tbody>
-            {topSellingProducts.map((product, index) => (
-              <tr
-                key={index}
-                className={`border-b hover:bg-blue-100 text-center ${
-                  index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                }`}
-              >
-                <td className="py-3 px-3">{index + 1}</td>
-                <td className="py-3 px-3 font-medium text-gray-700 ">
-                  {product.productName}
-                </td>
-                <td className="py-3 px-3 text-gray-600">{product.quantity}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ResponsiveContainer width="100%" height="80%">
+          <BarChart data={topProducts}>
+            <XAxis dataKey="productName" tick={{ fontSize: 18 }} />
+            <YAxis
+              tickFormatter={(value) => value.toLocaleString()}
+              domain={[
+                0,
+                Math.ceil(
+                  Math.max(...topProducts.map((p) => p.quantity)) / 30
+                ) * 30,
+              ]}
+            />
+            <Tooltip
+              formatter={(value) => `${value.toLocaleString()} Sản Phẩm`}
+            />
+            <Bar dataKey="quantity" name="Doanh số" barSize={80}>
+              {topProducts.map((_, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       {/* Pie Chart */}
       <div className="col-span-1 bg-white p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Top nhân viên bán hàng
+          {`Nhập nguyên liệu ${filteredBatches.length} lần/ tháng`}
         </h2>
-        <div className="flex justify-center items-center text-lg">
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={salesData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={120}
-                fill="#8884d8"
-                dataKey="value"
-                paddingAngle={5}
+        {filteredBatches.length > 0 ? (
+          filteredBatches.map((batch) => (
+            <Collapse
+              accordion
+              className="bg-gray-100 rounded-lg p-4 shadow-md"
+            >
+              <Collapse.Panel
+                key={batch.id}
+                header={`📅 Lần nhập: ${new Date(
+                  batch.createdAt
+                ).toLocaleString()}`}
+                className="bg-white rounded-lg shadow-md text-[18px]"
               >
-                {salesData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                    stroke="#ffffff"
-                    strokeWidth={1}
-                  />
-                ))}
-              </Pie>
-              <Tooltip cursor={{ fill: "rgba(0, 0, 0, 0.1)" }} />
-              <Legend
-                layout="horizontal"
-                align="center"
-                verticalAlign="bottom"
-                iconType="circle"
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+                <Table
+                  columns={[
+                    {
+                      title: "Nguyên liệu",
+                      dataIndex: "ingredient",
+                      key: "ingredient",
+                    },
+                    {
+                      title: "Số lượng",
+                      dataIndex: "quantity",
+                      key: "quantity",
+                    },
+                    { title: "Đơn vị", dataIndex: "unit", key: "unit" },
+                    {
+                      title: "Nhà cung cấp",
+                      dataIndex: "supplier",
+                      key: "supplier",
+                    },
+                  ]}
+                  dataSource={batch.entries}
+                  rowKey="id"
+                  pagination={false}
+                  size="small"
+                  className="custom-table border rounded-lg text-lg"
+                />
+              </Collapse.Panel>
+            </Collapse>
+          ))
+        ) : (
+          <p className="text-gray-500">
+            Không có lần nhập kho nào trong tháng này.
+          </p>
+        )}
       </div>
 
       <div className="col-span-2 bg-white p-6 rounded-lg shadow-lg">
@@ -264,16 +373,41 @@ const Page = () => {
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
+            <XAxis dataKey="month" name="Tháng" />
+
             <YAxis
-              tickFormatter={(value: any) =>
-                value.toLocaleString("vi-VN") + " VND"
+              yAxisId="left"
+              tickFormatter={(value) => value.toLocaleString("vi-VN") + " VND"}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              domain={[0, (dataMax: any) => Math.ceil(dataMax / 10) * 30]}
+              tickCount={6}
+              tickFormatter={(value) => value.toLocaleString("vi-VN") + " đơn"}
+            />
+
+            <Tooltip
+              formatter={(value, name) =>
+                name === "Đơn hàng"
+                  ? value.toLocaleString("vi-VN") + " đơn"
+                  : value.toLocaleString("vi-VN") + " VND"
               }
             />
-            <Tooltip
-              formatter={(value: any) => value.toLocaleString("vi-VN") + " VND"}
+            <Bar
+              yAxisId="left"
+              dataKey="revenue"
+              name="Doanh thu"
+              fill="#8884d8"
+              barSize={50}
             />
-            <Bar dataKey="revenue" fill="#8884d8" barSize={30} />
+            <Bar
+              yAxisId="right"
+              dataKey="totalOrders"
+              name="Đơn hàng"
+              fill="#82ca9d"
+              barSize={50}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

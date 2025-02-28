@@ -163,10 +163,10 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
         collapsible
         collapsed={collapsed}
         width={300}
-        className="bg-slate-200"
+        className="bg-gradient-to-r from-purple-100 to-blue-200"
         style={{ position: "fixed", height: "100vh" }}
       >
-        <div className="flex items-center justify-center p-4 bg-gradient-to-r from-purple-100 to-blue-200">
+        <div className="flex items-center justify-center mt-4 bg-gradient-to-r from-purple-100 to-blue-200">
           <Image src={logo} alt="Logo" />
         </div>
         <Button

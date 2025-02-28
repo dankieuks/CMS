@@ -426,7 +426,7 @@ const OrderPage: React.FC = () => {
             if (response) {
               printInvoice(orderData);
               localStorage.removeItem("pendingOrder");
-              localStorage.setItem("hasPrintedInvoice", "true"); // Đánh dấu đã in
+              localStorage.setItem("hasPrintedInvoice", "true"); 
             } else {
               console.error("Lỗi khi tạo đơn hàng:", response);
             }

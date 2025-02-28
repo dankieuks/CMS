@@ -14,9 +14,10 @@ export const useGetAllOrder = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/order`
       );
 
-      setOrders(response.data);
+      return response.data;
     } catch (error) {
       console.error("Error fetching orders:", error);
+      return [];
     }
   };
 
@@ -41,4 +42,3 @@ export const useGetOrder = () => {
 
   return { orders, getOrders };
 };
-

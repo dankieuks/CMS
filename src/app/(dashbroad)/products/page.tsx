@@ -239,7 +239,7 @@ const ProductManagement: React.FC = () => {
     <ProtectedRoute requiredRole="ADMIN">
       <section className=" p-6 rounded-xl">
         <div className="bg-gray-100 p-6 rounded-xl shadow-md mb-6">
-          <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm</h1>
+          <h1 className="text-3xl font-bold mb-6">Quản lý sản phẩm</h1>
           <Button
             color="primary"
             variant="solid"

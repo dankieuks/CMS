@@ -47,20 +47,20 @@ const WorkScheduleCalendar = () => {
     setEmployees(users);
   };
   const { fetchUsers } = useGetUser();
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/system-settings/edit-schedule`
+      );
+      console.log("Dữ liệu từ API:", response.data);
+      setIsReadOnly(response.data.isEnabled);
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu:", error);
+      message.error("Không thể lấy trạng thái lịch!");
+    }
+  };
   useEffect(() => {
     getUsers();
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/system-settings/edit-schedule`
-        );
-        console.log("Dữ liệu từ API:", response.data);
-        setIsReadOnly(response.data.isEnabled);
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
-        message.error("Không thể lấy trạng thái lịch!");
-      }
-    };
 
     fetchData();
   }, []);
@@ -273,12 +273,22 @@ const WorkScheduleCalendar = () => {
   return (
     <div className="bg-white m-6 p-3 md:p-6 rounded-xl shadow-md  ">
       <div className="flex flex-col md:flex-row  gap-4 justify-between items-center text-center">
-        <h2 className="text-2xl font-bold  text-gray-800">
+        <h2 className="text-3xl font-bold  text-gray-800">
           Lịch làm việc hàng tháng
         </h2>
 
-        <div className="flex flex-row gap-4">
-          <span>{isReadOnly ? "Chỉ xem" : "Chỉnh sửa"}</span>
+        <div className="flex flex-row gap-x-11">
+          <Button
+            type="default"
+            onClick={fetchData}
+            className="p-4 text-lg bg text-red-500"
+          >
+            Cập nhật chế độ chỉnh sửa lịch
+          </Button>
+
+          <span className="text-lg">
+            {isReadOnly ? "Chỉ xem" : "Chỉnh sửa"}
+          </span>
           <Switch
             checked={!isReadOnly}
             onChange={handleToggleEdit}

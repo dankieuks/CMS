@@ -143,7 +143,7 @@ const AdminPage: React.FC = () => {
     <ProtectedRoute requiredRole="ADMIN">
       <section className=" p-6 rounded-xl">
         <div className="bg-gray-50 p-6 rounded-xl shadow-lg mb-6">
-          <h1 className="text-2xl font-bold mb-6 text-gray-800">
+          <h1 className="text-3xl font-bold mb-6 text-gray-800">
             Quản lý nhân viên
           </h1>
 

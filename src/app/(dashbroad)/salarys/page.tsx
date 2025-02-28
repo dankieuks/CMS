@@ -88,7 +88,7 @@ const SalaryComponent: React.FC = () => {
   return (
     <div className="p-6 m-6 bg-gray-100  rounded-lg">
       <div className="mb-6 flex flex-row justify-between items-center">
-        <h2 className="text-2xl font-semibold text-gray-800 ">
+        <h2 className="text-3xl font-semibold text-gray-800 ">
           Bảng lương {` ${formattedMonth}`}
         </h2>
 

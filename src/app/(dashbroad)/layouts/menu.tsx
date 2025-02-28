@@ -16,21 +16,23 @@ interface SidebarMenuProps {
 }
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ onMenuClick, role }) => {
+  const iconStyle = { fontSize: "24px" }; // Điều chỉnh kích thước icon
+
   const items: MenuProps["items"] = [
     {
       key: "sub1",
       label: "Trang chủ",
-      icon: <AppstoreOutlined />,
+      icon: <AppstoreOutlined style={iconStyle} />,
       children: [
         {
           key: "1",
           label: <Link href="/home">Trang chủ</Link>,
-          icon: <AppstoreOutlined />,
+          icon: <AppstoreOutlined style={iconStyle} />,
         },
         {
           key: "2",
           label: <Link href="/orders">Tạo đơn hàng</Link>,
-          icon: <OrderedListOutlined />,
+          icon: <OrderedListOutlined style={iconStyle} />,
         },
       ],
     },
@@ -39,22 +41,27 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onMenuClick, role }) => {
           {
             key: "sub2",
             label: "Quản lý cửa hàng",
-            icon: <SettingOutlined />,
+            icon: <SettingOutlined style={iconStyle} />,
             children: [
               {
                 key: "3",
                 label: <Link href="/staff">Quản lý nhân viên</Link>,
-                icon: <TeamOutlined />,
+                icon: <TeamOutlined style={iconStyle} />,
               },
               {
                 key: "4",
                 label: <Link href="/products">Quản lý sản phẩm</Link>,
-                icon: <AppstoreAddOutlined />,
+                icon: <AppstoreAddOutlined style={iconStyle} />,
               },
               {
                 key: "7",
-                label: <Link href="/salarys">Lương</Link>,
-                icon: <DollarOutlined />,
+                label: <Link href="/salarys">Quản lý lương</Link>,
+                icon: <DollarOutlined style={iconStyle} />,
+              },
+              {
+                key: "8",
+                label: <Link href="/inventory">Quản lý kho</Link>,
+                icon: <DollarOutlined style={iconStyle} />,
               },
             ],
           },
@@ -63,25 +70,23 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onMenuClick, role }) => {
     {
       key: "sub3",
       label: "Lịch trình ",
-      icon: <DollarOutlined />,
+      icon: <DollarOutlined style={iconStyle} />,
       children: [
         {
           key: "6",
           label: <Link href="/workschedules">Lịch làm việc</Link>,
-          icon: <DollarOutlined />,
+          icon: <DollarOutlined style={iconStyle} />,
         },
       ],
     },
   ];
 
-  const onClick: MenuProps["onClick"] = (e) => {
-    console.log("Menu item clicked: ", e);
-    if (onMenuClick) onMenuClick();
-  };
-
   return (
     <Menu
-      onClick={onClick}
+      onClick={(e) => {
+        console.log("Menu item clicked: ", e);
+        if (onMenuClick) onMenuClick();
+      }}
       mode="inline"
       defaultOpenKeys={["sub1", "sub2", "sub3"]}
       defaultSelectedKeys={["1"]}
