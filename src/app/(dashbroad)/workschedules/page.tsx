@@ -277,7 +277,7 @@ const WorkScheduleCalendar = () => {
           Lịch làm việc hàng tháng
         </h2>
 
-        <div className="flex flex-row gap-x-11">
+        <div className="flex  flex-col gap-y-4  md:flex-row  gap-x-11">
           <Button
             type="default"
             onClick={fetchData}
@@ -293,6 +293,7 @@ const WorkScheduleCalendar = () => {
             checked={!isReadOnly}
             onChange={handleToggleEdit}
             disabled={auth?.user?.role === "STAFF"}
+            className="hidden md:block"
           />
           <Button
             type="primary"

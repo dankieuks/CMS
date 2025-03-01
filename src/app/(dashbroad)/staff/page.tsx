@@ -147,7 +147,7 @@ const AdminPage: React.FC = () => {
             Quản lý nhân viên
           </h1>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 justify-center  gap-4 md:gap-x-2  md:gap-y-6 lg:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6  justify-center  gap-4 md:gap-x-2  md:gap-y-6 lg:gap-4">
             <Button
               color="primary"
               variant="filled"

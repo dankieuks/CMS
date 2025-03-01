@@ -111,9 +111,11 @@ const Page = () => {
   ) => {
     const filteredOrders = orders.filter((order) => {
       const orderDate = new Date(order.createdAt);
-      return (
-        orderDate.getMonth() + 1 === month && orderDate.getFullYear() === year
-      );
+
+      const startDate = new Date(year, month - 1, 1, 0, 0, 0);
+      const endDate = new Date(year, month, 0, 23, 59, 59);
+
+      return orderDate >= startDate && orderDate <= endDate;
     });
 
     let totalProductsSold = 0;
@@ -129,7 +131,7 @@ const Page = () => {
 
     const sortedProducts = Object.entries(productSales)
       .map(([productName, quantity]) => ({ productName, quantity }))
-      .sort((a, b) => a.quantity - b.quantity)
+      .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5);
 
     return {
@@ -207,8 +209,8 @@ const Page = () => {
   return (
     <ProtectedRoute requiredRole="ADMIN">
       <div className="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="col-span-1 lg:col-span-2 bg-gradient-to-r from-blue-300 to-purple-400 text-white p-6 rounded-lg shadow-lg">
-          <div className=" flex justify-between text-2xl font-bold mb-6">
+        <div className="grid grid-cols-1 col-span-2 lg:col-span-2 bg-gradient-to-r from-blue-300 to-purple-400 text-white p-6 rounded-lg shadow-lg">
+          <div className="  col-span-2 flex justify-between text-2xl font-bold mb-6">
             <h2 className="text-3xl font-bold mb-6">
               {`Báo cáo hoạt động kinh doanh tháng ${selectedMonth}-${selectedYear}`}
             </h2>
@@ -241,7 +243,7 @@ const Page = () => {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-6 text-xl">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-6 text-xl">
             {[
               {
                 icon: <AiOutlineBarChart className="text-4xl" />,
@@ -281,7 +283,7 @@ const Page = () => {
             ))}
           </div>
         </div>
-        <div className="col-span-1 bg-white p-6 rounded-lg shadow-lg">
+        <div className="col-span-2 md:col-span-1 bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold mb-5 text-gray-800">
             {` Top sản phẩm bán chạy tháng ${selectedMonth}-${selectedYear}`}
           </h2>
@@ -300,7 +302,7 @@ const Page = () => {
               <Tooltip
                 formatter={(value) => `${value.toLocaleString()} Sản Phẩm`}
               />
-              <Bar dataKey="quantity" name="Doanh số" barSize={80}>
+              <Bar dataKey="quantity" name="Doanh số" barSize={60}>
                 {topProducts.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
